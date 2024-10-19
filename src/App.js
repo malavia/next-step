@@ -1,25 +1,36 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import Header from './layout/Header';
+import Footer from './layout/Footer';
+import Sidebar from './layout/Sidebar';
+import AppRoutes from './layout/AppRoutes';
 
-function App() {
+import ErrorBoundary from './components/ErrorBoundary'; 
+import ContextProvider from './context/ContextProvider'; // Importation de l'enveloppe des contextes
+
+const App = () => {
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+
+      <Header />
+
+    <ErrorBoundary>
+      <div style={{ display: 'flex' }}>
+        <Sidebar />
+        <main style={{ flexGrow: 1, padding: '20px' }}>
+          <ContextProvider>
+          <AppRoutes />
+          </ContextProvider>
+        </main>
+      </div>
+    </ErrorBoundary>
+
+      <Footer />
+
     </div>
   );
-}
+};
 
 export default App;
+
+
