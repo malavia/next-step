@@ -35,6 +35,15 @@ const Sidebar = () => {
         <li>
           <Link to="/SuitePageAccueil" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>SuitePageAccueil</Link>
         </li>
+        <li>
+          <Link to="/HandleSteps" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>HandleSteps</Link>
+        </li>
+        <li>
+          <Link to="/Llm" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>llm</Link>
+        </li>
+        <li>
+          <Link to="/StepManager" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>StepManager</Link>
+        </li>
       </ul>
 
     </aside>
