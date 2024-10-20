@@ -1,105 +1,115 @@
-import React, { useState } from 'react';
+// Wrapper.jsx
+import React, { useState, useCallback } from 'react';
 import StepManager from './StepManager';
 
 function Wrapper() {
+  const [steps, setSteps] = useState([]);
 
+  const handleSetSteps = useCallback((newSteps) => {
+    console.log('Mise à jour des étapes:', newSteps);
+    setSteps(newSteps);
+  }, []);
+  
 
-    const [steps, setSteps] = useState([]);
-    
-
-  const generateSubStep = (stepId) => {
-    // Génération d'une nouvelle sous-étape unique
+  const generateSubStep = useCallback((stepId) => {
     const newSubStep = { id: Date.now().toString(), content: 'Nouvelle sous-étape' };
-    
-    setSteps((prevSteps) =>
-      prevSteps.map((step) =>
+    setSteps(prevSteps =>
+      prevSteps.map(step =>
         step.id === stepId
           ? { ...step, subSteps: [...(step.subSteps || []), newSubStep] }
           : step
       )
     );
-  };
+  }, []);
 
-  // Gérer le changement d'une étape
-  const handleStepChange = (id, newContent) => {
-    setSteps(steps.map(step =>
-      step.id === id ? { ...step, content: newContent } : step
-    ));
-  };
+  const handleStepChange = useCallback((id, newContent) => {
+    setSteps(prevSteps =>
+      prevSteps.map(step =>
+        step.id === id ? { ...step, content: newContent } : step
+      )
+    );
+  }, []);
 
-  // Gérer le changement d'une sous-étape
-  const handleSubStepChange = (stepId, subStepId, newContent) => {
-    setSteps(steps.map(step => 
-      step.id === stepId
-        ? { 
-            ...step, 
+  const handleDragEnd = useCallback((result) => {
+    if (!result.destination) return;
+    setSteps(prevSteps => {
+      const items = Array.from(prevSteps);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+      return items;
+    });
+  }, []);
+
+  const toggleLock = useCallback((id) => {
+    setSteps(prevSteps =>
+      prevSteps.map(step =>
+        step.id === id ? { ...step, isLocked: !step.isLocked } : step
+      )
+    );
+  }, []);
+
+  const deleteStep = useCallback((id) => {
+    setSteps(prevSteps => prevSteps.filter(step => step.id !== id));
+  }, []);
+
+  const addSubStep = useCallback((stepId) => {
+    setSteps(prevSteps =>
+      prevSteps.map(step =>
+        step.id === stepId
+          ? {
+            ...step,
+            subSteps: [...(step.subSteps || []), {
+              id: `substep-${Date.now()}`,
+              content: ''
+            }]
+          }
+          : step
+      )
+    );
+  }, []);
+
+  const handleSubStepChange = useCallback((stepId, subStepId, newContent) => {
+    setSteps(prevSteps =>
+      prevSteps.map(step =>
+        step.id === stepId
+          ? {
+            ...step,
             subSteps: step.subSteps.map(subStep =>
               subStep.id === subStepId ? { ...subStep, content: newContent } : subStep
-            ) 
+            )
           }
-        : step
-    ));
-  };
+          : step
+      )
+    );
+  }, []);
 
-  // Ajouter une sous-étape
-  const addSubStep = (stepId) => {
-    const newSubStep = { id: `substep${Math.random().toString(36).substring(7)}`, content: '' };
-    setSteps(steps.map(step =>
-      step.id === stepId
-        ? { ...step, subSteps: [...step.subSteps, newSubStep] }
-        : step
-    ));
-  };
+  const deleteSubStep = useCallback((stepId, subStepId) => {
+    setSteps(prevSteps =>
+      prevSteps.map(step =>
+        step.id === stepId
+          ? {
+            ...step,
+            subSteps: step.subSteps.filter(subStep => subStep.id !== subStepId)
+          }
+          : step
+      )
+    );
+  }, []);
 
-  // Supprimer une sous-étape
-  const deleteSubStep = (stepId, subStepId) => {
-    setSteps(steps.map(step =>
-      step.id === stepId
-        ? { ...step, subSteps: step.subSteps.filter(subStep => subStep.id !== subStepId) }
-        : step
-    ));
-  };
-
-  const onDragEnd = (result) => {
-    if (!result.destination) return;
-    const newSteps = Array.from(steps);
-    const [reorderedItem] = newSteps.splice(result.source.index, 1);
-    newSteps.splice(result.destination.index, 0, reorderedItem);
-    setSteps(newSteps);
-  };
-
-  const toggleLock = (id) => {
-    setSteps(steps.map(step =>
-      step.id === id ? { ...step, isLocked: !step.isLocked } : step
-    ));
-  };
-
-  const deleteStep = (id) => {
-    setSteps(steps.filter(step => step.id !== id));
-  };
-
-  const addStep = () => {
-    const newStep = { id: `step${steps.length + 1}`, isLocked: false, subSteps: [] };
-    setSteps([...steps, newStep]);
-  };
-
-
-
-return (
-    <StepManager 
-  steps={steps}
-  setSteps={setSteps}
-  onDragEnd={onDragEnd}
-  handleStepChange={handleStepChange}
-  toggleLock={toggleLock}
-  deleteStep={deleteStep}
-  addSubStep={addSubStep}
-  handleSubStepChange={handleSubStepChange}
-  deleteSubStep={deleteSubStep}
-  generateSubStep={generateSubStep}
-
-/>
-)
+  return (
+    <StepManager
+      steps={steps}
+      setSteps={setSteps}
+      onDragEnd={handleDragEnd}
+      handleStepChange={handleStepChange}
+      toggleLock={toggleLock}
+      deleteStep={deleteStep}
+      addSubStep={addSubStep}
+      handleSubStepChange={handleSubStepChange}
+      deleteSubStep={deleteSubStep}
+      generateSubStep={generateSubStep}
+    />
+  );
 }
 
 export default Wrapper;

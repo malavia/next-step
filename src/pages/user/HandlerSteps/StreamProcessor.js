@@ -1,3 +1,4 @@
+// StreamProcessor.jsx
 import { useState, useEffect, useRef } from 'react';
 
 function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
@@ -5,9 +6,9 @@ function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
   const [localSteps, setLocalSteps] = useState([]);
   const stepsRef = useRef([]);
   const isDoneRef = useRef(false);
+  
 
   const finalizeSteps = () => {
-    // Éviter les appels multiples
     if (isDoneRef.current) return;
     isDoneRef.current = true;
 
@@ -16,7 +17,11 @@ function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
       finalSteps.push(currentStep.trim());
     }
     console.log('Étapes finales:', finalSteps);
-    onStepsGenerated(finalSteps);
+    if (typeof onStepsGenerated === 'function') {
+      onStepsGenerated(finalSteps);
+    } else {
+      console.error('onStepsGenerated is not a function');
+    }
   };
 
   const processStreamData = (data) => {

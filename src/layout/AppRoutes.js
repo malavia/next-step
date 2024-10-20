@@ -11,7 +11,7 @@ import Accueil from '../pages/user/Accueil';
 import SuitePageAccueil from '../pages/user/ObjectifWithSteps/SuitePageAccueil';
 import HandleSteps from '../pages/user/HandleSteps/ObjectivePlanner';
 import Llm from '../pages/test/llm';
-import StepManager from '../pages/user/HandlerSteps/StepManager';
+import Wrapper from '../pages/user/HandlerSteps/Wrapper';
 
 
 
@@ -26,7 +26,7 @@ const AppRoutes = () => {
             <Route path="/SuitePageAccueil" element= {<SuitePageAccueil />} />
             <Route path="/HandleSteps" element= {<HandleSteps />} />
             <Route path="/Llm" element= {<Llm />} />
-            <Route path="/StepManager" element= {<StepManager />} />
+            <Route path="/StepManager" element= {<Wrapper />} />
 
           </Routes>
   );

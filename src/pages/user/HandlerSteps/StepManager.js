@@ -1,30 +1,38 @@
-import { useState } from 'react';
-import StepList from '../HandleSteps/StepList';
+// StepManager.jsx
+import { useState, useCallback } from 'react';
+import StepList from './/StepList';
 import StreamProcessor from './StreamProcessor';
 import { Wand2 } from 'lucide-react';
 import Btn from './Btn';
 
-function StepManager({ onDragEnd, handleStepChange, toggleLock, deleteStep, addSubStep, handleSubStepChange, deleteSubStep, generateSubStep, steps, setsteps }) {
+function StepManager({ steps = [], setSteps, onDragEnd, handleStepChange, toggleLock, deleteStep, addSubStep, handleSubStepChange, deleteSubStep, generateSubStep }) {
   const [title, setTitle] = useState('');
-  const [generatedSteps, setGeneratedSteps] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [shouldStartGeneration, setShouldStartGeneration] = useState(false);
 
-  // Fonction appelée lorsqu'il y a de nouvelles étapes générées
-  const handleStepsGenerated = (newSteps) => {
-    setGeneratedSteps(prev => [...prev, ...newSteps]);
+  const handleStepsGenerated = useCallback((newSteps) => {
+    console.log('Nouvelles étapes reçues:', newSteps);
+    const formattedSteps = newSteps.map((step, index) => ({
+      id: `step-${Date.now()}-${index}`,
+      content: step,
+      isLocked: false,
+      subSteps: []
+    }));
+
+    
+    setSteps(formattedSteps);    
     setIsGenerating(false);
     setShouldStartGeneration(false);
-  };
+  }, [setSteps]);
 
-  // Fonction pour déclencher la génération des étapes
-  const generateSteps = () => {
+  const generateSteps = useCallback(() => {
     if (title.trim()) {
       setIsGenerating(true);
       setShouldStartGeneration(true);
-      setGeneratedSteps([]); // Reset les étapes précédentes
+      setSteps([]);
+      
     }
-  };
+  }, [title, setSteps]);
 
   return (
     <div className="step-manager-container">
@@ -37,8 +45,8 @@ function StepManager({ onDragEnd, handleStepChange, toggleLock, deleteStep, addS
           className="flex-1 p-2 border rounded"
         />
 
-        <Btn 
-          onClick={generateSteps} 
+        <Btn
+          onClick={generateSteps}
           className="flex items-center"
           isDisabled={!title.trim() || isGenerating}
         >
@@ -48,30 +56,26 @@ function StepManager({ onDragEnd, handleStepChange, toggleLock, deleteStep, addS
       </div>
 
       {shouldStartGeneration && (
-        <StreamProcessor 
-          title={title} 
+        <StreamProcessor
+          title={title}
           onStepsGenerated={handleStepsGenerated}
           isGenerating={isGenerating}
         />
       )}
 
-{generatedSteps}
-      <StepList
-        steps={generatedSteps.map((step, index) => ({
-          id: `step-${index}`,
-          content: step,
-          locked: false,
-          subSteps: []
-        }))}
-        onDragEnd={onDragEnd}
-        handleStepChange={handleStepChange}
-        toggleLock={toggleLock}
-        deleteStep={deleteStep}
-        addSubStep={addSubStep}
-        handleSubStepChange={handleSubStepChange}
-        deleteSubStep={deleteSubStep}
-        generateSubStep={generateSubStep}
-      />
+      {Array.isArray(steps) && (
+        <StepList
+          steps={steps}
+          onDragEnd={onDragEnd}
+          handleStepChange={handleStepChange}
+          toggleLock={toggleLock}
+          deleteStep={deleteStep}
+          addSubStep={addSubStep}
+          handleSubStepChange={handleSubStepChange}
+          deleteSubStep={deleteSubStep}
+          generateSubStep={generateSubStep}
+        />
+      )}
     </div>
   );
 }
