@@ -5,7 +5,7 @@ import StreamProcessor from './StreamProcessor';
 import { Wand2 } from 'lucide-react';
 import Btn from './Btn';
 
-function StepManager({ steps = [], setSteps, onDragEnd, handleStepChange, toggleLock, deleteStep, addSubStep, handleSubStepChange, deleteSubStep, generateSubStep }) {
+function StepManager({ steps = [], setSteps, onDragEnd, handleStepChange, toggleLock, addStep, deleteStep, addSubStep, handleSubStepChange, deleteSubStep, generateSubStep, setIsLoading }) {
   const [title, setTitle] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [shouldStartGeneration, setShouldStartGeneration] = useState(false);
@@ -23,12 +23,14 @@ function StepManager({ steps = [], setSteps, onDragEnd, handleStepChange, toggle
     setSteps(formattedSteps);    
     setIsGenerating(false);
     setShouldStartGeneration(false);
+    setIsLoading(false); 
   }, [setSteps]);
 
   const generateSteps = useCallback(() => {
     if (title.trim()) {
       setIsGenerating(true);
       setShouldStartGeneration(true);
+      setIsLoading(true); 
       setSteps([]);
       
     }
@@ -54,6 +56,10 @@ function StepManager({ steps = [], setSteps, onDragEnd, handleStepChange, toggle
           {isGenerating ? 'Génération...' : 'Générer les étapes'}
         </Btn>
       </div>
+
+      <Btn onClick={addStep} className="mb-4"> {/* Ajout du bouton "Ajouter une étape" */}
+        Ajouter une étape
+      </Btn>
 
       {shouldStartGeneration && (
         <StreamProcessor

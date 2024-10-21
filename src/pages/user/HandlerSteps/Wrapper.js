@@ -4,10 +4,12 @@ import StepManager from './StepManager';
 
 function Wrapper() {
   const [steps, setSteps] = useState([]);
+  const [isLoading, setIsLoading] = useState(false); // État du loader
 
   const handleSetSteps = useCallback((newSteps) => {
     console.log('Mise à jour des étapes:', newSteps);
     setSteps(newSteps);
+    setIsLoading(false); // Désactiver le loader après l'ajout des étapes
   }, []);
   
 
@@ -46,6 +48,16 @@ function Wrapper() {
         step.id === id ? { ...step, isLocked: !step.isLocked } : step
       )
     );
+  }, []);
+
+  const addStep = useCallback(() => {
+    const newStep = {
+      id: `step-${Date.now()}`,
+      content: '',
+      isLocked: false,
+      subSteps: []
+    };
+    setSteps((prevSteps) => [...prevSteps, newStep]);
   }, []);
 
   const deleteStep = useCallback((id) => {
@@ -97,18 +109,24 @@ function Wrapper() {
   }, []);
 
   return (
+    <>
+    <h1>HandlerSteps</h1>
+    {isLoading && <div>Loading...</div>} {/* Affichage du loader */}
     <StepManager
       steps={steps}
-      setSteps={setSteps}
+      setSteps={handleSetSteps}
       onDragEnd={handleDragEnd}
       handleStepChange={handleStepChange}
       toggleLock={toggleLock}
+      addStep={addStep}
       deleteStep={deleteStep}
       addSubStep={addSubStep}
       handleSubStepChange={handleSubStepChange}
       deleteSubStep={deleteSubStep}
       generateSubStep={generateSubStep}
+      setIsLoading={setIsLoading}
     />
+    </>
   );
 }
 

@@ -39,19 +39,14 @@ function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
       setCurrentStep(prev => {
         const newStep = prev + content;
 
-        if (content.includes('°') ) {
-         // if (content.includes('.') || content.includes('\n')) {
+          if (content.includes('\n') ) {
           if (newStep.trim()) {
             const updatedSteps = [...stepsRef.current, newStep.trim()];
             stepsRef.current = updatedSteps;
             setLocalSteps(updatedSteps);
             console.log('Nouvelle étape ajoutée:', newStep.trim());
-            console.log('Étapes actuelles:', updatedSteps);
           }
-          console.log('Nouvelle étape:', newStep.trim());
-          const parts = newStep.split(/[\°]/);
-          //const parts = newStep.split(/[.\n]/);
-          //const parts = newStep.split(/[\[]/);
+          const parts = newStep.split(/[\n]/);
           return parts[parts.length - 1] || '';
         }
 
@@ -83,7 +78,7 @@ function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
           },
           { 
             role: "user", 
-            content: `retourne moi une liste d'etapes  pour ${title}. Chaque étape que tu as imaginé commence par le caractère °` 
+            content: `retourne moi une liste d'etapes  pour ${title}. Chaque étape que tu as imaginé fini par un saut de ligne, c'est important car après je vais spliter ces étapes` 
           }
         ],
         temperature: 0.7,
