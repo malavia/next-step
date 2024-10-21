@@ -1,15 +1,24 @@
 // Wrapper.jsx
-import React, { useState, useCallback } from 'react';
-import StepManager from './StepManager';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import StepManager from './StepManagerUI';
+
+
 
 function Wrapper() {
   const [steps, setSteps] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // État du loader
 
+  const isLoadingRef = useRef(isLoading);
+
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+    console.log("isLoading est maintenant :", isLoadingRef.current);
+  }, [isLoading]);
+
   const handleSetSteps = useCallback((newSteps) => {
     console.log('Mise à jour des étapes:', newSteps);
     setSteps(newSteps);
-    setIsLoading(false); // Désactiver le loader après l'ajout des étapes
+    //setIsLoading(false); // Désactiver le loader après l'ajout des étapes
   }, []);
   
 
@@ -111,7 +120,6 @@ function Wrapper() {
   return (
     <>
     <h1>HandlerSteps</h1>
-    {isLoading && <div>Loading...</div>} {/* Affichage du loader */}
     <StepManager
       steps={steps}
       setSteps={handleSetSteps}
@@ -124,7 +132,8 @@ function Wrapper() {
       handleSubStepChange={handleSubStepChange}
       deleteSubStep={deleteSubStep}
       generateSubStep={generateSubStep}
-      setIsLoading={setIsLoading}
+      isLoadingRef={isLoadingRef}
+      SaveObjective={() => console.log('Objectif sauvegarde')}
     />
     </>
   );
