@@ -7,10 +7,8 @@ import { Button } from './Btn';
 import PropTypes from 'prop-types';
 import { CircularProgress } from '@mui/material';
 import { v4 as uuidv4 } from 'uuid';
+import {isSubStep, clearStepContent, clearSubStepContent} from '../../../utils/clearData';
 
-const generateUniqueId = () => {
-  return uuidv4(); // Génère un identifiant unique
-};
 
 function StepManager({
   steps,
@@ -31,21 +29,52 @@ function StepManager({
   const [isGenerating, setIsGenerating] = useState(false);
   const [shouldStartGeneration, setShouldStartGeneration] = useState(false);
 
+  const generateUniqueId = () => {
+    return uuidv4(); // Génère un identifiant unique
+  };
 
-  const handleStepsGenerated = useCallback((newSteps) => {
-    const formattedSteps = newSteps.map((step, index) => ({
-      id: generateUniqueId(),
-      content: step,
-      isLocked: false,
-      subSteps: []
-    }));
 
+
+
+  const formatSteps = useCallback((newSteps) => {
+    let formattedSteps = [];
+    let currentStep = null;
+  
+    newSteps.forEach((step) => {
+      // Vérifier si c'est une sous-étape avec des tirets ou des formats "Sous-étape"
+      if (isSubStep(step)) {
+        // C'est une sous-étape, on l'ajoute à la dernière étape principale.
+        if (currentStep) {
+          currentStep.subSteps.push({
+            id: generateUniqueId(),
+            content: clearSubStepContent(step), 
+          });
+        }
+      } else {
+        // C'est une nouvelle étape principale
+        currentStep = {
+          id: generateUniqueId(),
+          content: clearStepContent(step),
+          isLocked: false,
+          subSteps: []
+        };
+        formattedSteps.push(currentStep);
+      }
+    });
+  
     setSteps(formattedSteps);
     setIsGenerating(false);
     setShouldStartGeneration(false);
     
     isLoadingRef.current = false;
   }, [setSteps]);
+  
+  
+  
+  
+  
+  
+  
 
   const generateSteps = useCallback(() => {
     if (title.trim()) {
@@ -96,7 +125,7 @@ function StepManager({
       {shouldStartGeneration && (
         <LLMStepGenerator
           title={title}
-          onStepsGenerated={handleStepsGenerated}
+          onStepsGenerated={formatSteps}
           isGenerating={isGenerating}
         />
       )}

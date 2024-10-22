@@ -1,7 +1,40 @@
 import { useState, useEffect, useRef } from 'react';
 import { nettoyerTexte } from '../../../utils/clearData';
 
-export function LLMStepGenerator({ title, onStepsGenerated, isGenerating, isSubStep = false, parentStepId = null, parentStepContent = null }) {
+// Fonction externe pour gérer le contenu du rôle utilisateur et traiter les données du flux
+function processUserContent(content, currentStep, stepsRef, setLocalSteps) {
+  let newStep = currentStep + content;
+
+  if (content.includes('\n')) {
+    if (newStep.trim()) {
+      console.log('Nouvelle étape avec sous-étapes ajoutée:', newStep.trim());
+      //newStep = nettoyerTexte(newStep);
+      const updatedSteps = [...stepsRef.current, newStep.trim()];
+      stepsRef.current = updatedSteps;
+      setLocalSteps(updatedSteps);
+    }
+    const parts = newStep.split(/\n+/);
+    return parts[parts.length - 1] || '';
+  }
+
+  return newStep;
+}
+
+// Fonction externe pour gérer les messages envoyés au LLM
+function getLLMMessages(title) {
+  return [
+    { 
+      role: "system", 
+      content: "Respond like a coach assistant. Provide the answer directly without any introductory text." 
+    },
+    {
+      role: "user", 
+      content: `Génère une liste d'étapes pour atteindre l'objectif suivant : "${title}". Chaque étape doit avoir 2 à 3 sous-étapes. Assure-toi que les étapes et les sous-étapes sont rédigées de manière réutilisable pour d'autres objectifs. Chaque étape et sous-étape doit être séparée par un saut de ligne. Les sous étapes doivent commencer par le texte "Sous-étape 1 :"` 
+    }
+  ];
+}
+
+export function LLMStepGenerator({ title, onStepsGenerated, isGenerating, parentStepId = null }) {
   const [currentStep, setCurrentStep] = useState('');
   const [localSteps, setLocalSteps] = useState([]);
   const stepsRef = useRef([]);
@@ -16,77 +49,50 @@ export function LLMStepGenerator({ title, onStepsGenerated, isGenerating, isSubS
     if (currentStep.trim()) {
       finalSteps.push(currentStep.trim());
     }
-    console.log('Finalisation des étapes:', finalSteps); // Debug: Afficher les étapes finales
-    onStepsGenerated(finalSteps, parentStepId);  // Passer parentStepId pour les sous-étapes
+    console.log('Finalisation des étapes:', finalSteps);
+    onStepsGenerated(finalSteps, parentStepId);
   };
 
   const processStreamData = (data) => {
     try {
       const jsonString = data.replace(/^data: /, '');
-      //console.log('Données de flux reçues:', jsonString); // Debug: Afficher les données reçues
 
       if (jsonString.trim() === '[DONE]') {
-        console.log('Données de flux complètes. Finalisation...'); // Debug: Indiquer la fin du flux
+        console.log('Données de flux complètes. Finalisation...');
         finalizeSteps();
         return;
       }
 
       const jsonData = JSON.parse(jsonString);
       const content = jsonData.choices?.[0]?.delta?.content || '';
-      console.log('Contenu du message:', content); // Debug: Afficher le contenu du message
-      setCurrentStep((prev) => {
-        let newStep = prev + content;
+      console.log('Contenu du message:', content);
 
-        if (content.includes('\n')) {
-          if (newStep.trim()) {
-            console.log(isSubStep ? 'Nouvelle sous-étape ajoutée:' : 'Nouvelle étape ajoutée:', newStep.trim());
-            newStep = nettoyerTexte(newStep);
-            const updatedSteps = [...stepsRef.current, newStep.trim()];
-            stepsRef.current = updatedSteps;
-            setLocalSteps(updatedSteps);
-          }
-          const parts = newStep.split(/\n+/);
-          return parts[parts.length - 1] || '';
-        }
-
-        return newStep;
-      });
+      setCurrentStep((prev) => processUserContent(content, prev, stepsRef, setLocalSteps));
     } catch (error) {
-      console.error('Erreur lors du traitement des données de flux:', error); // Debug: Afficher les erreurs
+      console.error('Erreur lors du traitement des données de flux:', error);
     }
   };
 
   useEffect(() => {
-    console.log('isGenerating:', isGenerating); // Debug: Surveiller quand la génération commence
+    console.log('isGenerating:', isGenerating);
     if (!isGenerating) return;
 
-    console.log('Réinitialisation des étapes et démarrage d’une nouvelle génération'); // Debug: Indiquer une nouvelle génération
+    console.log('Réinitialisation des étapes et démarrage d’une nouvelle génération');
     setCurrentStep('');
     setLocalSteps([]);
     stepsRef.current = [];
     isDoneRef.current = false;
-    abortControllerRef.current = new AbortController();
+    abortControllerRef.current  = new AbortController();
 
     const fetchStream = async () => {
-      console.log('Début de la requête...'); // Debug: Indiquer le début de la requête
+      console.log('Début de la requête...');
       try {
         const response = await fetch('http://127.0.0.1:1234/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: "lmstudio-community/dolphin-2.8-mistral-7b-v02-GGUF/dolphin-2.8-mistral-7b-v02-Q4_0.gguf",
-            messages: [
-              { 
-                role: "system", 
-                content: "Respond like a coach assistant. Provide the answer directly without any introductory text." 
-              },
-              {
-                role: "user", 
-                content: isSubStep 
-                  ? `Génère une liste de sous-étapes pour l'étape suivante : "${parentStepContent}" pour l'objectif "${title}". Chaque étape que tu as imaginé finit par un saut de ligne, c'est important car après je vais splitter ces étapes. ne réécrit pas le contenu de l'étape parente dans la nouvelle liste de sous-étapes.`
-                  : `Retourne-moi une liste d'étapes pour ${title}. Chaque étape que tu as imaginé finit par un saut de ligne, c'est important car après je vais splitter ces étapes.`
-              }
-            ],
+            messages: getLLMMessages(title),
             temperature: 0.7,
             max_tokens: -1,
             stream: true
@@ -121,16 +127,16 @@ export function LLMStepGenerator({ title, onStepsGenerated, isGenerating, isSubS
 
           for (const line of lines) {
             if (line.trim() && line.startsWith('data: ')) {
-              console.log('Ligne de flux:', line); // Debug: Afficher chaque ligne du flux
+              console.log('Ligne de flux:', line);
               processStreamData(line);
             }
           }
         }
       } catch (error) {
         if (error.name === 'AbortError') {
-          console.log('Requête annulée'); // Debug: Indiquer que la requête a été annulée
+          console.log('Requête annulée');
         } else {
-          console.error('Erreur lors de la lecture du flux:', error); // Debug: Afficher toute autre erreur
+          console.error('Erreur lors de la lecture du flux:', error);
         }
         finalizeSteps();
       }
@@ -139,7 +145,7 @@ export function LLMStepGenerator({ title, onStepsGenerated, isGenerating, isSubS
     fetchStream();
 
     return () => {
-      console.log('Cleanup: annulation de la requête et finalisation des étapes'); // Debug: Surveiller le nettoyage
+      console.log('Cleanup: annulation de la requête et finalisation des étapes');
       abortControllerRef.current?.abort();
       if (!isDoneRef.current) {
         finalizeSteps();

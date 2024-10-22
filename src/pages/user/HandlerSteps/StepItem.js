@@ -26,7 +26,7 @@ const StepItem = ({
     >
       {/* En-tête de l'étape */}
       <div className="px-4 py-2 flex items-center justify-between border-b border-gray-100">
-        <span className="mr-2 font-bold text-gray-700">{index + 1}.</span>
+        <span className="mr-2 font-bold text-gray-700">Étape {index + 1}.</span>
         <input 
           value={step.content}
           onChange={(e) => handleStepChange(step.id, e.target.value)}
