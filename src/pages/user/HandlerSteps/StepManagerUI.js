@@ -1,11 +1,16 @@
 // StepManager.jsx
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Wand2, Plus, Save } from 'lucide-react';
 import  StepList  from './StepList';
-import { StreamProcessor } from './LLMStepGenerator';
+import { LLMStepGenerator } from './LLMStepGenerator';
 import { Button } from './Btn';
 import PropTypes from 'prop-types';
 import { CircularProgress } from '@mui/material';
+import { v4 as uuidv4 } from 'uuid';
+
+const generateUniqueId = () => {
+  return uuidv4(); // Génère un identifiant unique
+};
 
 function StepManager({
   steps,
@@ -29,7 +34,7 @@ function StepManager({
 
   const handleStepsGenerated = useCallback((newSteps) => {
     const formattedSteps = newSteps.map((step, index) => ({
-      id: `step-${Date.now()}-${index}`,
+      id: generateUniqueId(),
       content: step,
       isLocked: false,
       subSteps: []
@@ -89,7 +94,7 @@ function StepManager({
       </Button>
 
       {shouldStartGeneration && (
-        <StreamProcessor
+        <LLMStepGenerator
           title={title}
           onStepsGenerated={handleStepsGenerated}
           isGenerating={isGenerating}
@@ -106,6 +111,7 @@ function StepManager({
         handleSubStepChange={handleSubStepChange}
         deleteSubStep={deleteSubStep}
         generateSubStep={generateSubStep}
+        isGeneratingSubStep={isGenerating}
       />
 
 

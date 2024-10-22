@@ -1,8 +1,7 @@
-// StreamProcessor.jsx
 import { useState, useEffect, useRef } from 'react';
 import { nettoyerTexte } from '../../../utils/clearData';
 
-export function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
+export function LLMStepGenerator({ title, onStepsGenerated, isGenerating, isSubStep = false, parentStepId = null, parentStepContent = null }) {
   const [currentStep, setCurrentStep] = useState('');
   const [localSteps, setLocalSteps] = useState([]);
   const stepsRef = useRef([]);
@@ -17,47 +16,51 @@ export function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
     if (currentStep.trim()) {
       finalSteps.push(currentStep.trim());
     }
-    onStepsGenerated(finalSteps);
+    console.log('Finalisation des étapes:', finalSteps); // Debug: Afficher les étapes finales
+    onStepsGenerated(finalSteps, parentStepId);  // Passer parentStepId pour les sous-étapes
   };
 
   const processStreamData = (data) => {
     try {
       const jsonString = data.replace(/^data: /, '');
+      //console.log('Données de flux reçues:', jsonString); // Debug: Afficher les données reçues
 
       if (jsonString.trim() === '[DONE]') {
+        console.log('Données de flux complètes. Finalisation...'); // Debug: Indiquer la fin du flux
         finalizeSteps();
         return;
       }
 
       const jsonData = JSON.parse(jsonString);
       const content = jsonData.choices?.[0]?.delta?.content || '';
-
+      console.log('Contenu du message:', content); // Debug: Afficher le contenu du message
       setCurrentStep((prev) => {
         let newStep = prev + content;
 
         if (content.includes('\n')) {
           if (newStep.trim()) {
-            console.log('Nouvelle étape ajoutée:', newStep.trim());
-            newStep = nettoyerTexte(newStep); // Appliquer nettoyage sans casser le format
+            console.log(isSubStep ? 'Nouvelle sous-étape ajoutée:' : 'Nouvelle étape ajoutée:', newStep.trim());
+            newStep = nettoyerTexte(newStep);
             const updatedSteps = [...stepsRef.current, newStep.trim()];
             stepsRef.current = updatedSteps;
             setLocalSteps(updatedSteps);
-            console.log('Nouvelle étape ajoutée:', newStep.trim());
           }
-          const parts = newStep.split(/\n+/); // Assure une bonne gestion des sauts de ligne
-          return parts[parts.length - 1] || ''; // Garde la partie après le dernier saut de ligne
+          const parts = newStep.split(/\n+/);
+          return parts[parts.length - 1] || '';
         }
 
         return newStep;
       });
     } catch (error) {
-      console.error('Error processing stream data:', error);
+      console.error('Erreur lors du traitement des données de flux:', error); // Debug: Afficher les erreurs
     }
   };
 
   useEffect(() => {
+    console.log('isGenerating:', isGenerating); // Debug: Surveiller quand la génération commence
     if (!isGenerating) return;
 
+    console.log('Réinitialisation des étapes et démarrage d’une nouvelle génération'); // Debug: Indiquer une nouvelle génération
     setCurrentStep('');
     setLocalSteps([]);
     stepsRef.current = [];
@@ -65,6 +68,7 @@ export function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
     abortControllerRef.current = new AbortController();
 
     const fetchStream = async () => {
+      console.log('Début de la requête...'); // Debug: Indiquer le début de la requête
       try {
         const response = await fetch('http://127.0.0.1:1234/v1/chat/completions', {
           method: 'POST',
@@ -76,9 +80,11 @@ export function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
                 role: "system", 
                 content: "Respond like a coach assistant. Provide the answer directly without any introductory text." 
               },
-              { 
+              {
                 role: "user", 
-                content: `retourne moi une liste d'etapes  pour ${title}. Chaque étape que tu as imaginé fini par un saut de ligne, c'est important car après je vais spliter ces étapes` 
+                content: isSubStep 
+                  ? `Génère une liste de sous-étapes pour l'étape suivante : "${parentStepContent}" pour l'objectif "${title}". Chaque étape que tu as imaginé finit par un saut de ligne, c'est important car après je vais splitter ces étapes. ne réécrit pas le contenu de l'étape parente dans la nouvelle liste de sous-étapes.`
+                  : `Retourne-moi une liste d'étapes pour ${title}. Chaque étape que tu as imaginé finit par un saut de ligne, c'est important car après je vais splitter ces étapes.`
               }
             ],
             temperature: 0.7,
@@ -89,7 +95,7 @@ export function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`Erreur HTTP! statut: ${response.status}`);
         }
 
         const reader = response.body.getReader();
@@ -115,15 +121,16 @@ export function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
 
           for (const line of lines) {
             if (line.trim() && line.startsWith('data: ')) {
+              console.log('Ligne de flux:', line); // Debug: Afficher chaque ligne du flux
               processStreamData(line);
             }
           }
         }
       } catch (error) {
         if (error.name === 'AbortError') {
-          console.log('Fetch aborted');
+          console.log('Requête annulée'); // Debug: Indiquer que la requête a été annulée
         } else {
-          console.error('Error reading stream:', error);
+          console.error('Erreur lors de la lecture du flux:', error); // Debug: Afficher toute autre erreur
         }
         finalizeSteps();
       }
@@ -132,14 +139,15 @@ export function StreamProcessor({ title, onStepsGenerated, isGenerating }) {
     fetchStream();
 
     return () => {
+      console.log('Cleanup: annulation de la requête et finalisation des étapes'); // Debug: Surveiller le nettoyage
       abortControllerRef.current?.abort();
       if (!isDoneRef.current) {
         finalizeSteps();
       }
     };
-  }, [title, isGenerating, onStepsGenerated]);
+  }, [title, isGenerating, onStepsGenerated, parentStepId]);
 
   return null;
 }
 
-export default StreamProcessor;
+export default LLMStepGenerator;

@@ -1,13 +1,17 @@
-// Wrapper.jsx
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import StepManager from './StepManagerUI';
+import LLMStepGenerator from './LLMStepGenerator';
+import { v4 as uuidv4 } from 'uuid';
 
-
+const generateUniqueId = () => {
+  return uuidv4(); // Génère un identifiant unique
+};
 
 function Wrapper() {
   const [steps, setSteps] = useState([]);
-  const [isLoading, setIsLoading] = useState(false); // État du loader
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingSubStep, setIsGeneratingSubStep] = useState(false);
+  const [currentStepId, setCurrentStepId] = useState(null); // Pour savoir quelle étape génère une sous-étape
   const isLoadingRef = useRef(isLoading);
 
   useEffect(() => {
@@ -18,19 +22,6 @@ function Wrapper() {
   const handleSetSteps = useCallback((newSteps) => {
     console.log('Mise à jour des étapes:', newSteps);
     setSteps(newSteps);
-    //setIsLoading(false); // Désactiver le loader après l'ajout des étapes
-  }, []);
-  
-
-  const generateSubStep = useCallback((stepId) => {
-    const newSubStep = { id: Date.now().toString(), content: 'Nouvelle sous-étape' };
-    setSteps(prevSteps =>
-      prevSteps.map(step =>
-        step.id === stepId
-          ? { ...step, subSteps: [...(step.subSteps || []), newSubStep] }
-          : step
-      )
-    );
   }, []);
 
   const handleStepChange = useCallback((id, newContent) => {
@@ -66,7 +57,7 @@ function Wrapper() {
       isLocked: false,
       subSteps: []
     };
-    setSteps((prevSteps) => [...prevSteps, newStep]);
+    setSteps(prevSteps => [...prevSteps, newStep]);
   }, []);
 
   const deleteStep = useCallback((id) => {
@@ -80,7 +71,7 @@ function Wrapper() {
           ? {
             ...step,
             subSteps: [...(step.subSteps || []), {
-              id: `substep-${Date.now()}`,
+              id: generateUniqueId(), // Utilise la fonction pour générer un ID unique
               content: ''
             }]
           }
@@ -89,16 +80,49 @@ function Wrapper() {
     );
   }, []);
 
+  const generateSubStep = useCallback((stepId) => {
+    setIsGeneratingSubStep(true);
+    setCurrentStepId(stepId); // Sauvegarde l'ID de l'étape en cours
+
+    const handleSubStepsGenerated = (newSubSteps) => {
+      setSteps(prevSteps =>
+        prevSteps.map(step =>
+          step.id === stepId
+            ? { ...step, subSteps: [...(step.subSteps || []), ...newSubSteps.map(subStep => ({ id: generateUniqueId(), content: subStep }))] }
+            : step
+        )
+      );
+      setIsGeneratingSubStep(false);
+      setCurrentStepId(null); // Réinitialise l'ID courant
+    };
+
+    return (
+      <LLMStepGenerator
+        title="Sous-étape"
+        onStepsGenerated={handleSubStepsGenerated}
+        isGenerating={isGeneratingSubStep}
+        isSubStep={true}
+        parentStepId={stepId}
+      />
+    );
+  }, []);
+
+  // ** Récupérer le contenu de l'étape actuelle **
+  const getStepContent = (stepId) => {
+    const currentStep = steps.find(step => step.id === stepId);
+    return currentStep ? currentStep.content : '';
+  };
+
   const handleSubStepChange = useCallback((stepId, subStepId, newContent) => {
     setSteps(prevSteps =>
       prevSteps.map(step =>
         step.id === stepId
           ? {
-            ...step,
-            subSteps: step.subSteps.map(subStep =>
-              subStep.id === subStepId ? { ...subStep, content: newContent } : subStep
-            )
-          }
+              ...step,
+              subSteps: step.subSteps.map(subStep =>
+                subStep.id === subStepId ? { ...subStep, content: newContent } : subStep
+              )
+            }
           : step
       )
     );
@@ -109,9 +133,9 @@ function Wrapper() {
       prevSteps.map(step =>
         step.id === stepId
           ? {
-            ...step,
-            subSteps: step.subSteps.filter(subStep => subStep.id !== subStepId)
-          }
+              ...step,
+              subSteps: step.subSteps.filter(subStep => subStep.id !== subStepId)
+            }
           : step
       )
     );
@@ -119,22 +143,42 @@ function Wrapper() {
 
   return (
     <>
-    <h1>HandlerSteps</h1>
-    <StepManager
-      steps={steps}
-      setSteps={handleSetSteps}
-      onDragEnd={handleDragEnd}
-      handleStepChange={handleStepChange}
-      toggleLock={toggleLock}
-      addStep={addStep}
-      deleteStep={deleteStep}
-      addSubStep={addSubStep}
-      handleSubStepChange={handleSubStepChange}
-      deleteSubStep={deleteSubStep}
-      generateSubStep={generateSubStep}
-      isLoadingRef={isLoadingRef}
-      SaveObjective={() => console.log('Objectif sauvegarde')}
-    />
+      <h1>HandlerSteps</h1>
+      <StepManager
+        steps={steps}
+        setSteps={handleSetSteps}
+        onDragEnd={handleDragEnd}
+        handleStepChange={handleStepChange}
+        toggleLock={toggleLock}
+        addStep={addStep}
+        deleteStep={deleteStep}
+        addSubStep={addSubStep}
+        handleSubStepChange={handleSubStepChange}
+        deleteSubStep={deleteSubStep}
+        generateSubStep={generateSubStep}
+        isLoadingRef={isLoadingRef}
+        SaveObjective={() => console.log('Objectif sauvegardé')}
+      />
+      {isGeneratingSubStep && currentStepId && (
+        <LLMStepGenerator
+          title="Sous-étape"
+          onStepsGenerated={(newSubSteps) => {
+            setSteps(prevSteps =>
+              prevSteps.map(step =>
+                step.id === currentStepId
+                  ? { ...step, subSteps: [...(step.subSteps || []), ...newSubSteps.map(subStep => ({ id: Date.now().toString(), content: subStep }))] }
+                  : step
+              )
+            );
+            setIsGeneratingSubStep(false);
+            setCurrentStepId(null);
+          }}
+          isGenerating={isGeneratingSubStep}
+          isSubStep={true}
+          parentStepId={currentStepId}
+          parentStepContent={getStepContent(currentStepId)}  
+        />
+      )}
     </>
   );
 }

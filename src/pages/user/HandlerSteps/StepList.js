@@ -3,7 +3,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import StepItem from './StepItem';
 
 /* Contient la logique du DragDropContext et la liste des étapes avec sous-étapes */
-const StepList = ({ steps, onDragEnd, handleStepChange, toggleLock, deleteStep, addSubStep, handleSubStepChange, deleteSubStep, generateSubStep }) => {
+const StepList = ({ steps, onDragEnd, handleStepChange, toggleLock, deleteStep, addSubStep, handleSubStepChange, deleteSubStep, generateSubStep, isGeneratingSubStep }) => {
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Droppable droppableId="list">
@@ -25,6 +25,7 @@ const StepList = ({ steps, onDragEnd, handleStepChange, toggleLock, deleteStep, 
                       deleteStep={deleteStep}
                       addSubStep={addSubStep}
                       generateSubStep={generateSubStep}
+                      isGeneratingSubStep = {isGeneratingSubStep}
                     />
 
 
