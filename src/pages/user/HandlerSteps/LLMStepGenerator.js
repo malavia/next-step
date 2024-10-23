@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { nettoyerTexte } from '../../../utils/clearData';
 
 // Fonction externe pour gérer le contenu du rôle utilisateur et traiter les données du flux
 function processUserContent(content, currentStep, stepsRef, setLocalSteps) {
@@ -8,7 +7,6 @@ function processUserContent(content, currentStep, stepsRef, setLocalSteps) {
   if (content.includes('\n')) {
     if (newStep.trim()) {
       console.log('Nouvelle étape avec sous-étapes ajoutée:', newStep.trim());
-      //newStep = nettoyerTexte(newStep);
       const updatedSteps = [...stepsRef.current, newStep.trim()];
       stepsRef.current = updatedSteps;
       setLocalSteps(updatedSteps);

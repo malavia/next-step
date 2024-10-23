@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import StepManager from './StepManagerUI';
 import LLMStepGenerator from './LLMStepGenerator';
 import { v4 as uuidv4 } from 'uuid';
+import StepGeneratorWithDisplay from '../../test/realtime';
 
 const generateUniqueId = () => {
   return uuidv4(); // Génère un identifiant unique
@@ -144,6 +145,7 @@ function Wrapper() {
   return (
     <>
       <h1>HandlerSteps</h1>
+      <StepGeneratorWithDisplay />
       <StepManager
         steps={steps}
         setSteps={handleSetSteps}
