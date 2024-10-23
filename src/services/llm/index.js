@@ -4,6 +4,7 @@ import { StreamHandler } from './streamHandler';
 
 export const streamLLMResponse = async (title, onChunk, onError, onComplete) => {
   
+  const abortController = new AbortController();
   try {
     const response = await fetch(LLM_CONFIG.endpoint, {
       method: 'POST',
@@ -12,12 +13,20 @@ export const streamLLMResponse = async (title, onChunk, onError, onComplete) => 
         ...LLM_CONFIG,
         messages: buildMessages(title),
         stream: true
-      })
+      }),
+      signal: abortController.signal
     });
 
     const handler = new StreamHandler(onChunk, onError, onComplete);
-    await handler.processStream(response);
+    handler.abortController = abortController;
+    
+    // Démarrer le traitement du stream dans une promesse séparée
+    const processPromise = handler.processStream(response);
+    
+    // Retourner le handler immédiatement
+    return handler;
   } catch (error) {
-    onError(error);
+    onError?.(error);
+    return null;
   }
 };

@@ -2,7 +2,6 @@
 import { useCallback } from 'react';
 
 export const useStepManager = ({initialSteps, setSteps}) => {
-    console.log('Initial steps:', initialSteps);
   const handleUpdateStep = useCallback((updatedStep) => {
     setSteps(prev => {
       if (prev.find(step => step.id === updatedStep.id)) {

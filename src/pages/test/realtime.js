@@ -9,7 +9,7 @@ import {Wand2} from 'lucide-react';
 const StepGeneratorWithDisplay = () => {
   const [steps, setSteps] = useState([]);
   const [title, setTitle] = useState([]);
-  const { isGenerating, startGeneration } = useStepStream({ setSteps, title: "avoir un chien" });
+  const { isGenerating, startGeneration, stopGeneration  } = useStepStream({ setSteps, title: "avoir un chien" });
   const stepManager = useStepManager({steps, setSteps});
 
   /*
@@ -59,6 +59,7 @@ const StepGeneratorWithDisplay = () => {
 
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="max-w-3xl mx-auto">
+      <div className="flex gap-4">
         <button 
           onClick={startGeneration}
           disabled={isGenerating}
@@ -72,7 +73,17 @@ const StepGeneratorWithDisplay = () => {
           {isGenerating ? 'Génération en cours...' : 'Générer les étapes'}
         </button>
         
+        {isGenerating && (
+            <button 
+              onClick={stopGeneration}
+              className="px-4 py-2 rounded-lg font-medium bg-red-500 hover:bg-red-600 text-white"
+            >
+              Arrêter la génération
+            </button>
+          )}
+
         {isGenerating && <CircularProgress />}
+        </div>
         <StepDisplay 
           steps={steps}
           isGenerating={isGenerating} 

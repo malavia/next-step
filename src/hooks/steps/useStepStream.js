@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { streamLLMResponse } from '../../services/llm';
 import { isSubStep, clearStepContent, clearSubStepContent } from '../../utils/clearData';
 
@@ -15,10 +15,10 @@ const generateUniqueId = () => {
  */
 
 export const useStepStream = ({ setSteps, title}) => {
-    console.log('useStepStream', title);
   const [isGenerating, setIsGenerating] = useState(false);
   const currentStepRef = useRef(null);
   const bufferRef = useRef('');
+  const handlerRef = useRef(null);
 
   const updateSteps = useCallback((line) => {
     const trimmedLine = line.trim();
@@ -49,6 +49,7 @@ export const useStepStream = ({ setSteps, title}) => {
   }, []);
 
   const handleChunk = useCallback((content) => {
+    console.log('handleChunk', content);
     const fullContent = bufferRef.current + content;
     const lines = fullContent.split('\n');
     
@@ -61,22 +62,55 @@ export const useStepStream = ({ setSteps, title}) => {
     });
   }, [updateSteps]);
 
+  const stopGeneration = useCallback(async () => {
+    console.log('Stopping generation...');
+    if (handlerRef.current) {
+      try {
+        await handlerRef.current.abort();
+        console.log('Generation successfully stopped');
+      } catch (error) {
+        console.error('Error while stopping the generation:', error);
+        handlerRef.current?.onError?.(error);
+      } finally {
+        handlerRef.current = null;
+        setIsGenerating(false);
+      }
+    }
+  }, []);
+
+
   const startGeneration = useCallback(async () => {
     setIsGenerating(true);
     setSteps([]);
     currentStepRef.current = null;
     bufferRef.current = '';
 
-    await streamLLMResponse(
+    handlerRef.current = await streamLLMResponse(
       title,
       handleChunk,
-      console.error,
-      () => setIsGenerating(false)
+      (error) => {
+        console.error(error);
+        stopGeneration();
+      },
+      () => {
+        handlerRef.current = null;
+        setIsGenerating(false);
+      }
     );
-  }, [handleChunk]);
+  }, [handleChunk, stopGeneration]);
+
+
+  useEffect(() => {
+    return () => {
+      if (handlerRef.current) {
+        handlerRef.current.abort();
+      }
+    };
+  }, []);
 
   return {
     isGenerating,
-    startGeneration
+    startGeneration,
+    stopGeneration
   };
 };
