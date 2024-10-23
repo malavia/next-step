@@ -37,7 +37,7 @@ const b = "* Sous-étape 2 : Répertorier";
 const C = "- Répertorier";
 const d = "Sous-étape 1 : Répertorier"; 
 Sous-étape 1.1 : Identifier les éléments clés de l'objectif "gfhgf".
-
+Sous-étape 2.2:
 renvoit tous "Répertorier"
 
 const theRegexForSubStep = /^[-*]?\s*(?:Sous-étape \d+ :|[-*]\s*.*?):?\s*/;
