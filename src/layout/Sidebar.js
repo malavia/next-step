@@ -22,8 +22,6 @@ const Sidebar = () => {
   } 
 
 
-
-
   return (
     <aside style={{ width: '250px', padding: '20px', backgroundColor: '#f8f9fa', borderRight: '1px solid #e1e1e1' }}>    
 
@@ -33,16 +31,10 @@ const Sidebar = () => {
           <Link to="/Accueil" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>Accueil</Link>
         </li>
         <li>
-          <Link to="/SuitePageAccueil" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>SuitePageAccueil</Link>
-        </li>
-        <li>
-          <Link to="/HandleSteps" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>HandleSteps</Link>
-        </li>
-        <li>
           <Link to="/Llm" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>llm</Link>
         </li>
         <li>
-          <Link to="/StepManager" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>StepManager</Link>
+          <Link to="/StepGenerator" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>StepGenerator</Link>
         </li>
       </ul>
 

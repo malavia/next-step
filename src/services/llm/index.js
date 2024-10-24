@@ -5,6 +5,7 @@ import { ParserLLMResponse } from './ParserLLMResponse';
 /**
  * appelé par le hook useStepsGenerator
  * Demande une réponse LLM via un flux et appelle les fonctions de rappel en conséquence.
+ * Le dossier ne fait rien d'autres que retourner les chunks à la fonction de rappel.
  * appel ParserLLMResponse qui va traiter les chunks
  *
  * @param {string} title - Le titre de la requête
