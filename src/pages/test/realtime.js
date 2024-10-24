@@ -1,7 +1,7 @@
 // src/pages/test/realtime.js
 import React, { useState } from 'react';
 import { CircularProgress } from '@mui/material';
-import { useStepStream } from '../../hooks/steps/useStepStream';
+import { useStepsGenerator  } from '../../hooks/steps/useStepsGenerator';
 import { useStepManager } from '../../hooks/steps/useStepCRUD';
 import { StepDisplay } from '../../components/steps/StepDisplay';
 import {Wand2} from 'lucide-react';
@@ -9,7 +9,7 @@ import {Wand2} from 'lucide-react';
 const StepGeneratorWithDisplay = () => {
   const [steps, setSteps] = useState([]);
   const [title, setTitle] = useState([]);
-  const { isGenerating, startGeneration, stopGeneration  } = useStepStream({ setSteps, title: "avoir un chien" });
+  const { isGenerating, startGeneration, stopGeneration  } = useStepsGenerator ({ setSteps, title: "avoir un chien" });
   const stepManager = useStepManager({steps, setSteps});
 
   /*

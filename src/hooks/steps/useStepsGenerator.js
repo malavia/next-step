@@ -7,14 +7,17 @@ const generateUniqueId = () => {
   };
 
 /**
- * Custom hook that manages the generation of steps using a stream response. (real-time)
- * It handles updating steps, chunking data, and starting the generation process.
+ * * hook personnalisé qui gère la génération d'étapes à l'aide d'une réponse de flux. (temps réel) 
+ * * Il demande l'appel a LLM via streamLLMResponse (index.js) et récupére les chunks.
+ * * Il gère :
+ *  - la mise à jour des étapes, (updateSteps)
+ *  - le chunking des données, (handleChunk)
+ *  - le démarrage et l'arrêt du processus de génération. (stopGeneration, startGeneration) 
  * 
- * * hook qui personnalisé qui gère la génération d'étapes à l'aide d'une réponse de flux. (temps réel) 
- * * Il gère la mise à jour des étapes, le chunking des données et le démarrage du processus de génération.
+ *   => streamLLMResponse (index.js)
  */
 
-export const useStepStream = ({ setSteps, title}) => {
+export const useStepsGenerator  = ({ setSteps, title}) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const currentStepRef = useRef(null);
   const bufferRef = useRef('');

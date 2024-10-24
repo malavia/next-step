@@ -1,4 +1,14 @@
-export class StreamHandler {
+/*
+* est appelé par streamLLMResponse (index.js)
+* les chunks retournés sont envoyé à useStepsGenerator (handleChunk)
+*/
+export class ParserLLMResponse {
+
+   /*
+   * @param {function(string)} onChunk - Fonction de rappel pour chaque chunk de la réponse.
+   * @param {function(Error)} onError - Fonction de rappel si une erreur survient.
+   * @param {function()} onComplete - Fonction de rappel lorsque la réponse est terminée.
+   */
   constructor(onChunk, onError, onComplete) {
     this.buffer = '';
     this.onChunk = onChunk;
@@ -9,7 +19,14 @@ export class StreamHandler {
     this.isAborted = false;
   }
 
-  async processStream(response) {
+  /**
+   * lit un flux de reponse LLM, le traite et retourne les chunks (0 à 5 caractères max) à la fonction de rappel (onChunk).
+   * 
+   * @param {Response} response - La réponse LLM
+   *
+   * @returns {Promise<void>} - Une promesse qui est résolue lorsque le flux est terminé.
+   */
+  async parseLLM(response) {
     try {
       this.reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -24,7 +41,6 @@ export class StreamHandler {
           break;
         }        
         
-        // Si aborted, sortir de la boucle
         if (this.isAborted) {
           break;
         }
@@ -68,6 +84,14 @@ export class StreamHandler {
   }
 
   
+  /**
+   * Abort the stream and cancel any ongoing read operation.
+   * If the stream has not started yet, this will prevent it from starting.
+   * If the stream has started, this will attempt to cancel the ongoing read operation
+   * and prevent any further chunks from being processed.
+   * The `abort` method returns a promise that resolves when the stream has been aborted.
+   * @returns {Promise<void>}
+   */
   async abort() {
     console.log('Aborting stream...');
     this.isAborted = true;
