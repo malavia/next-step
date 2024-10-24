@@ -18,6 +18,12 @@ const generateUniqueId = () => Math.random().toString(36).substr(2, 9);
  *   => streamLLMResponse (index.js)
  */
 
+const ERRORS = {
+  CONNECTION_FAILED: 'CONNECTION_FAILED',
+  STREAM_ERROR: 'STREAM_ERROR',
+  ABORT_ERROR: 'ABORT_ERROR'
+};
+
 const createNewStep = (content) => ({
   id: generateUniqueId(),
   content: clearStepContent(content),
@@ -39,7 +45,6 @@ const addSubStepToLastStep = (steps, subStep) => {
 
 const addNewStep = (steps, newStep) => [...steps, newStep];
 
-// Traite une ligne individuelle
 const processLine = (line, currentStepRef, setSteps) => {
   const trimmedLine = line.trim();
   if (!trimmedLine) return;
@@ -54,7 +59,6 @@ const processLine = (line, currentStepRef, setSteps) => {
   }
 };
 
-// Traite un ensemble de lignes
 const processLines = (lines, bufferRef, updateSteps) => {
   lines.forEach(line => {
     if (line.trim()) {
@@ -63,14 +67,37 @@ const processLines = (lines, bufferRef, updateSteps) => {
   });
 };
 
-// Main hook
-export const useStepsGenerator = ({ setSteps, title }) => {
+export const useStepsGenerator = ({ setSteps, title, onError }) => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState(null);
   const currentStepRef = useRef(null);
   const bufferRef = useRef('');
   const handlerRef = useRef(null);
+  const retryTimeoutRef = useRef(null);
+  const retryCountRef = useRef(0);
+  const MAX_RETRIES = 1; // nb de tententatives de connection
+  const RETRY_DELAY = 2000; // 2 seconds
 
-  // Gestion du buffer
+  const handleError = useCallback((error, type = ERRORS.STREAM_ERROR) => {
+    console.error('Error in steps generator:', error);
+    setError({ type, message: error.message });
+    setIsGenerating(false);
+    onError?.(error);
+  }, [onError]);
+
+  const cleanup = useCallback(() => {
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+    }
+    if (handlerRef.current) {
+      handlerRef.current.abort();
+    }
+    handlerRef.current = null;
+    retryCountRef.current = 0;
+    bufferRef.current = '';
+    currentStepRef.current = null;
+  }, []);
+
   const processFinalBuffer = useCallback(() => {
     if (bufferRef.current.trim()) {
       processLine(bufferRef.current, currentStepRef, setSteps);
@@ -78,12 +105,10 @@ export const useStepsGenerator = ({ setSteps, title }) => {
     }
   }, [setSteps]);
 
-  // Update steps handler
   const updateSteps = useCallback((line) => {
     processLine(line, currentStepRef, setSteps);
   }, [setSteps]);
 
-  // Traitement des chunks
   const handleChunk = useCallback((content) => {
     const fullContent = bufferRef.current + content;
     const lines = fullContent.split('\n');
@@ -102,59 +127,73 @@ export const useStepsGenerator = ({ setSteps, title }) => {
 
   const stopGeneration = useCallback(async () => {
     console.log('Stopping generation...');
-    if (handlerRef.current) {
-      try {
-        await handlerRef.current.abort();
-        processFinalBuffer();
-        console.log('Generation successfully stopped');
-      } catch (error) {
-        console.error('Error while stopping the generation:', error);
-        handlerRef.current?.onError?.(error);
-      } finally {
-        handlerRef.current = null;
-        setIsGenerating(false);
-      }
+    try {
+      await cleanup();
+      processFinalBuffer();
+      console.log('Generation successfully stopped');
+    } catch (error) {
+      handleError(error, ERRORS.ABORT_ERROR);
+    } finally {
+      setIsGenerating(false);
     }
-  }, [processFinalBuffer]);
+  }, [cleanup, processFinalBuffer, handleError]);
 
   const startGeneration = useCallback(async () => {
     const initializeGeneration = () => {
       setIsGenerating(true);
+      setError(null);
       setSteps([]);
       currentStepRef.current = null;
       bufferRef.current = '';
+      retryCountRef.current = 0;
+    };
+
+    const attemptConnection = async () => {
+      try {
+        handlerRef.current = await streamLLMResponse(
+          title,
+          handleChunk,
+          (error) => {
+            if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+              // Connection failed - attempt retry if under max retries
+              if (retryCountRef.current < MAX_RETRIES) {
+                retryCountRef.current++;
+                console.log(`Retrying connection (${retryCountRef.current}/${MAX_RETRIES})...`);
+                retryTimeoutRef.current = setTimeout(attemptConnection, RETRY_DELAY);
+                return;
+              }
+              handleError(error, ERRORS.CONNECTION_FAILED);
+            } else {
+              handleError(error);
+            }
+            stopGeneration();
+          },
+          () => {
+            processFinalBuffer();
+            cleanup();
+            setIsGenerating(false);
+          }
+        );
+      } catch (error) {
+        handleError(error);
+        cleanup();
+      }
     };
 
     initializeGeneration();
+    await attemptConnection();
+  }, [handleChunk, stopGeneration, processFinalBuffer, title, setSteps, cleanup, handleError]);
 
-    handlerRef.current = await streamLLMResponse(
-      title,
-      handleChunk,
-      (error) => {
-        console.error(error);
-        stopGeneration();
-      },
-      () => {
-        processFinalBuffer();
-        handlerRef.current = null;
-        setIsGenerating(false);
-      }
-    );
-  }, [handleChunk, stopGeneration, processFinalBuffer, title, setSteps]);
-
-  // Cleanup effect
   useEffect(() => {
     return () => {
-      if (handlerRef.current) {
-        processFinalBuffer();
-        handlerRef.current.abort();
-      }
+      cleanup();
     };
-  }, [processFinalBuffer]);
+  }, [cleanup]);
 
   return {
     isGenerating,
     startGeneration,
-    stopGeneration
+    stopGeneration,
+    error
   };
 };
