@@ -9,7 +9,6 @@ import { getAuth } from "firebase/auth";
 const firebaseConfig = {
   apiKey: "AIzaSyCwgQbI2304NXuprIj-Ew4RMIc7qbmdx3k",
   authDomain: "plateformewellbeing.firebaseapp.com",
-  databaseURL: "https://plateformewellbeing-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "plateformewellbeing",
   storageBucket: "plateformewellbeing.appspot.com",
   messagingSenderId: "390332869930",

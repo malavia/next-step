@@ -6,8 +6,9 @@ const theRegexForStep = /^[-*]? ?Étape \d+ ?:?\s*/;
 
 //const theRegexForSubStep = /^[-*] Sous-étape \d+ ?:?\s*/ ; //// Enlève le "- Sous-étape X :" ou "* Sous-étape X :" au début
 //const theRegexForSubStep = /^[-*] Sous-étape \d* ?:?\s*|^[-*] ?/;
-const theRegexForSubStep = /^[-*]?\s*(?:Sous-étape \d+ :|[-*]\s*.*?):?\s*/;
+//const theRegexForSubStep = /^[-*]?\s*(?:Sous-étape \d+ :|[-*]\s*.*?):?\s*/;
 
+const theRegexForSubStep = /^[-*]?\s*(Sous-étape \d+(\.\d+)?(?:\s*:)?)/;
 /*
 [-*] : Cela correspond à un tiret (-) ou à un astérisque (*) au début de la chaîne.
 Sous-étape : Correspond exactement au mot "Sous-étape".
