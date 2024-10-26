@@ -1,11 +1,11 @@
 // RealTimeStepManager.jsx
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useStepsGenerator } from '../user/StepManager/hooks/useStepsGenerator';
-import { StepDisplay } from '../user/StepManager/components/StepDisplay';
+import { useStepsGenerator } from './hooks/useStepsGenerator';
+import { StepDisplay } from './components/StepDisplay';
 import { CircularProgress } from '@mui/material';
 import { Wand2, Save } from 'lucide-react';
-import { useStepsManagement } from '../user/StepManager/hooks/useStepsManagement';
+import { useStepsManagement } from './hooks/useStepsManagement';
 
 /**
  * Page pour gérer un objectif en temps réel.
