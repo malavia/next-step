@@ -94,25 +94,24 @@ const NewStepInput = ({ onAddStep }) => {
   );
 };
 
-export const StepDisplay = ({ 
-  steps, 
-  isGenerating,
-  onUpdateStep,
-  onDeleteStep,
-  onAddSubStep,
-  onUpdateSubStep,
-  onDeleteSubStep,
-  onReorderSteps
-}) => {
+
+export const StepDisplay = ({
+    steps,
+    loading,
+    isGenerating,
+    onUpdateStep,
+    onDeleteStep,
+    onAddStep,
+    onAddSubStep,
+    onUpdateSubStep,
+    onDeleteSubStep,
+    onReorderSteps
+  }) => {
+
+
   const handleAddStep = (content) => {
     if (content.trim()) {
-      const newStep = {
-        id: Math.random().toString(36).substr(2, 9),
-        content: content,
-        isLocked: false,
-        subSteps: []
-      };
-      onUpdateStep(newStep);
+      onAddStep(content);
       return true;
     }
     return false;
@@ -133,6 +132,15 @@ export const StepDisplay = ({
     onReorderSteps(reorderedSteps);
   };
 
+  if (loading) {
+    return (
+      <div className="mt-4 max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        <div className="text-center">Chargement...</div>
+      </div>
+    );
+  }
+
+
   return (
     <div className="mt-4 max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6">
       <h2 className="text-xl font-bold mb-4">Liste des Étapes :</h2>
@@ -146,6 +154,9 @@ export const StepDisplay = ({
               {...provided.droppableProps}
               ref={provided.innerRef}
             >
+
+
+
               {steps.map((step, index) => (
                 <Draggable 
                   key={step.id} 
@@ -196,9 +207,10 @@ export const StepDisplay = ({
                         </div>
                       </div>
                       
+                      
                       {/* Sub-Step list */}
                       <div className="ml-8 mt-2">
-                        {step.subSteps.map((subStep, subIndex) => (
+                        {step.subSteps.map((subStep) => (
                           <div key={subStep.id} className="flex items-center gap-2 mb-1 text-gray-600">
                             <div className="flex-1 flex items-center">
                               <EditableContent
@@ -227,7 +239,7 @@ export const StepDisplay = ({
 
       {steps.length === 0 && (
         <div className="text-gray-500 text-center">
-          {isGenerating ? "" : "Aucune étape générée pour le moment"}
+          {isGenerating ? "Génération en cours..." : "Aucune étape pour le moment"}
         </div>
       )}
     </div>

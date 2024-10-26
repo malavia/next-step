@@ -1,12 +1,13 @@
-import { useState } from 'react';
-import { getDatabase, ref, push, set } from 'firebase/database';
+/*import { useState } from 'react';
+import { getFirestore, collection, doc, setDoc } from 'firebase/firestore';
 import { useAuth } from '../../../../context/AuthProvider';
+
 
 export const useSaveSteps = () => {
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const { user } = useAuth();
-  const db = getDatabase();
+  const db = getFirestore();
 
   const saveSteps = async (title, steps) => {
     if (!user) {
@@ -23,13 +24,12 @@ export const useSaveSteps = () => {
     setSaveError(null);
 
     try {
-      // Créer une nouvelle référence pour l'objectif
-      const objectiveRef = ref(db, `users/${user.uid}/objectives`);
-      const newObjectiveRef = push(objectiveRef);
+      // Créer une référence pour un nouvel objectif dans Firestore
+      const objectiveRef = doc(collection(db, `users/${user.uid}/objectives`));
 
       // Préparer les données de l'objectif
       const objectiveData = {
-        id: newObjectiveRef.key,
+        id: objectiveRef.id,
         title: title,
         createdAt: new Date().toISOString(),
         completed: false,
@@ -45,7 +45,7 @@ export const useSaveSteps = () => {
       };
 
       // Sauvegarder les données
-      await set(newObjectiveRef, objectiveData);
+      await setDoc(objectiveRef, objectiveData);
 
       console.log('Objectif et étapes sauvegardés avec succès');
       return true;
@@ -63,4 +63,4 @@ export const useSaveSteps = () => {
     saveLoading,
     saveError
   };
-};
+};*/

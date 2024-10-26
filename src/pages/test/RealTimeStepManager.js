@@ -1,39 +1,24 @@
-// src/pages/test/realtime.js
-/* La page appelle le dosssier llm, les hooks steps, et le composant de steps / StepDisplay.
- * Le composant StepDisplay est un composant qui affiche les étapes. 
- */
-
-/**
- * StepGeneratorWithDisplay est un composant qui génère des étapes en fonction
- * d'un titre et qui les affiche.
- * Il utilise le hook useStepsGenerator pour générer les étapes et le hook
- * useStepManager pour gérer les étapes.
- * Le composant affiche un champ de saisie pour le titre, un bouton pour
- * lancer la génération et un bouton pour l'arrêter.
- * Le composant affiche également un indicateur de chargement en cas de
- * génération en cours.
- * Le composant utilise le composant StepDisplay pour afficher les étapes.
- * @returns {React.ReactElement} 
- */
-
+// RealTimeStepManager.jsx
 import React from 'react';
-import { useStepsGenerator } from './hooks/useStepsGenerator';
-import { useStepsManagement } from './hooks/useStepsManagement';
-import { StepDisplay } from './components/StepDisplay';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useStepsGenerator } from '../user/StepManager/hooks/useStepsGenerator';
+import { StepDisplay } from '../user/StepManager/components/StepDisplay';
 import { CircularProgress } from '@mui/material';
 import { Wand2, Save } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useStepsManagement } from '../user/StepManager/hooks/useStepsManagement';
 
 /**
- * StepGeneratorWithDisplay est un composant qui génère des étapes en fonction
- * d'un titre et qui les affiche.
- * Utilise useStepsManagement pour gérer l'état et la persistence des étapes.
+ * Page pour gérer un objectif en temps réel.
+ * Permet de saisir un titre, de générer des étapes et de les modifier.
+ * Permet également d'enregistrer l'objectif.
  * 
- * @returns {React.ReactElement} 
+ * @param {string} objectiveId - ID de l'objectif (facultatif)
+ * @returns {ReactElement} Composant JSX pour la page de gestion d'objectif en temps réel
  */
-const StepGeneratorWithDisplay = () => {
+const RealTimeStepManager = () => {
+  const { objectiveId } = useParams();
   const navigate = useNavigate();
-  
+
   const {
     steps,
     setSteps,
@@ -43,32 +28,54 @@ const StepGeneratorWithDisplay = () => {
     error,
     saveLoading,
     saveError,
+    addStep,
+    updateStep,
+    deleteStep,
+    addSubStep,
+    updateSubStep,
+    deleteSubStep,
+    reorderSteps,
     saveObjective
-  } = useStepsManagement({});
-  
-  const { isGenerating, startGeneration, stopGeneration } = useStepsGenerator({ 
+  } = useStepsManagement({ objectiveId });
+
+  const { 
+    isGenerating, 
+    startGeneration, 
+    stopGeneration 
+  } = useStepsGenerator({ 
     onStepsGenerated: setSteps,
     title 
   });
 
   const handleSave = async () => {
     const savedId = await saveObjective();
-    if (savedId) {
+    if (savedId && !objectiveId) {
       navigate(`/test/realtime/${savedId}`);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <CircularProgress />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="max-w-3xl mx-auto">
-        {/* En-tête avec titre et boutons */}
+        {/* Header avec titre et boutons */}
         <div className="flex gap-4 mb-6">
-nombre : {steps.length}
+          
+        <span className="text-3xl font-bold">Etapes</span>
+        nombre : {steps.length}
+
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Entrez le titre pour générer les étapes"
+            placeholder="Entrez le titre de l'objectif"
             className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
 
@@ -93,6 +100,7 @@ nombre : {steps.length}
               Arrêter la génération
             </button>
           )}
+
           <button
             onClick={handleSave}
             disabled={saveLoading || isGenerating || !title.trim() || !steps.length}
@@ -119,21 +127,28 @@ nombre : {steps.length}
             {saveError}
           </div>
         )}
-
         {/* Affichage des étapes */}
-        {loading ? (
-          <div className="flex justify-center items-center">
-            <CircularProgress />
-          </div>
-        ) : (
-          <StepDisplay
-            steps={steps}
-            isGenerating={isGenerating}
-          />
-        )}
+
+        
+        {steps.map((subStep) => (
+    <div key={subStep.id}>{subStep.content}</div>
+  ))}
+
+        <StepDisplay
+          steps={steps}
+          loading={loading}
+          isGenerating={isGenerating}
+          onAddStep={addStep}
+          onUpdateStep={updateStep}
+          onDeleteStep={deleteStep}
+          onAddSubStep={addSubStep}
+          onUpdateSubStep={updateSubStep}
+          onDeleteSubStep={deleteSubStep}
+          onReorderSteps={reorderSteps}
+        />
       </div>
     </div>
   );
 };
 
-export default StepGeneratorWithDisplay;
+export default RealTimeStepManager;

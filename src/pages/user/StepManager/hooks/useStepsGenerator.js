@@ -15,6 +15,8 @@ const generateUniqueId = () => Math.random().toString(36).substr(2, 9);
  *  - le chunking des données, (handleChunk)
  *  - le démarrage et l'arrêt du processus de génération. (stopGeneration, startGeneration) 
  * 
+ * useStepsGenerator génère des étapes et Il les communique via un callback à useStepsManagement
+ * 
  *   => streamLLMResponse (index.js)
  */
 
@@ -109,21 +111,32 @@ export const useStepsGenerator = ({ setSteps, title, onError }) => {
     processLine(line, currentStepRef, setSteps);
   }, [setSteps]);
 
+
   const handleChunk = useCallback((content) => {
+    console.log('Chunk received:', content);
     const fullContent = bufferRef.current + content;
     const lines = fullContent.split('\n');
+    console.log('Buffer:', lines);
     
-    if (!content.endsWith('\n') && lines[lines.length - 1]) {
-      bufferRef.current = lines.pop() || '';
+    //if (!content.endsWith('\n') && lines[lines.length - 1]) {
+    if (!content.endsWith('\n')) {
+      bufferRef.current = lines.pop() || ''; // Stocker la dernière ligne incomplète
+      console.log('Buffering1:', lines);
     } else {
-      bufferRef.current = '';
+      bufferRef.current = ''; // Réinitialiser le buffer
       if (lines[lines.length - 1]?.trim()) {
+        // Assurez-vous de ne pas ajouter une ligne vide à la fin
         lines.push(lines[lines.length - 1]);
       }
     }
-
-    processLines(lines, bufferRef, updateSteps);
+  
+    console.log('end Buffer:', lines);
+    processLines(lines, bufferRef, updateSteps); // Appelez processLines avec le contenu restant
   }, [updateSteps]);
+
+  
+
+  
 
   const stopGeneration = useCallback(async () => {
     console.log('Stopping generation...');

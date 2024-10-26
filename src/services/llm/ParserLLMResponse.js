@@ -28,14 +28,18 @@ export class ParserLLMResponse {
    */
   async parseLLM(response) {
     try {
+      if (!response.body) {
+        throw new Error("Response body is undefined");
+      }
       this.reader = response.body.getReader();
       const decoder = new TextDecoder();
 
       while (!this.isAborted) {
         const { done, value } = await this.reader.read();
-
         if (done) {
+          console.log('Fin du flux détectée.');
           if (this.onComplete) {
+            console.log('Appel de onComplete');
             this.onComplete();
           }
           break;
@@ -47,7 +51,7 @@ export class ParserLLMResponse {
 
         const chunk = decoder.decode(value);
         const lines = chunk.split('\n');
-
+       // console.log("Lignes : ", lines);
         for (const line of lines) {
           if (this.isAborted) break; 
           if (line.trim() && line.startsWith('data: ')) {
@@ -55,6 +59,7 @@ export class ParserLLMResponse {
               const jsonData = JSON.parse(line.slice(5));
               const content = jsonData.choices?.[0]?.delta?.content || '';
               if (content) {
+                //console.log('Contenu du message:', content);
                 this.onChunk(content);
               }
             } catch (error) {
@@ -73,9 +78,11 @@ export class ParserLLMResponse {
       }
     } finally {
       // Nettoyage
+  console.log('Finalisation du flux');
       if (this.reader) {
         try {
           await this.reader.cancel();
+          console.log('Reader annulé');
         } catch (error) {
           console.error('Error cancelling reader:', error);
         }

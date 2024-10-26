@@ -36,6 +36,9 @@ const Sidebar = () => {
         <li>
           <Link to="/StepGenerator" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>StepGenerator</Link>
         </li>
+        <li>
+          <Link to="/test/realtime" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>realTimeStepManager</Link>
+        </li>
       </ul>
 
     </aside>

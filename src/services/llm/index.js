@@ -16,8 +16,9 @@ import { ParserLLMResponse } from './ParserLLMResponse';
  * @returns {Promise<StreamHandler>} - Une promesse qui résout en un StreamHandler qui permet d'annuler la requête.
  */
 export const streamLLMResponse = async (title, onChunk, onError, onComplete) => {
-  
   const abortController = new AbortController();
+  console.log("Début du streaming...");
+
   try {
     const response = await fetch(LLM_CONFIG.endpoint, {
       method: 'POST',
@@ -29,16 +30,17 @@ export const streamLLMResponse = async (title, onChunk, onError, onComplete) => 
       }),
       signal: abortController.signal
     });
+    console.log("Réponse reçue du serveur");
 
-    const handler = new ParserLLMResponse (onChunk, onError, onComplete);
+    const handler = new ParserLLMResponse(onChunk, onError, onComplete);
     handler.abortController = abortController;
-    
-    // Démarrer le traitement du stream dans une promesse séparée
-    const processPromise = handler.parseLLM(response);
-    
-    // Retourner le handler immédiatement
+
+    // Débogage dans `parseLLM`
+    handler.parseLLM(response);
+
     return handler;
   } catch (error) {
+    console.error("Erreur dans streamLLMResponse :", error);
     onError?.(error);
     return null;
   }
