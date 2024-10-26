@@ -40,7 +40,7 @@ import { useAuth } from '../../../../context/AuthProvider';
  * @returns {Function} saveObjective - Function to save the objective.
  * @returns {Function} refreshObjective - Function to refresh the objective data.
  */
-export const useStepsManagement = ({ objectiveId = null, initialSteps = [], initialTitle = '' }) => {
+export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTitle = '' }) => {
   const [steps, setSteps] = useState(initialSteps);
   const [title, setTitle] = useState(initialTitle);
   const [loading, setLoading] = useState(objectiveId ? true : false);
@@ -81,7 +81,7 @@ export const useStepsManagement = ({ objectiveId = null, initialSteps = [], init
   // Save objective
   const saveObjective = async () => {
     if (!user || !title.trim() || !steps.length) return;
-    
+    console.log('sdq');
     setSaveLoading(true);
     setSaveError(null);
 
@@ -104,6 +104,8 @@ export const useStepsManagement = ({ objectiveId = null, initialSteps = [], init
         // Update existing document
         const objectiveRef = doc(db, `users/${user.uid}/objectives`, objectiveId);
         await updateDoc(objectiveRef, objectiveData);
+        
+        console.log('Sauvegarde effectuée avec succes');
         return objectiveId;
       }
     } catch (err) {

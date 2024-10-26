@@ -1,4 +1,5 @@
 // src/hooks/steps/useStepCRUD.js
+/*
 import { useCallback } from 'react';
 
 export const useStepManager = ({initialSteps, setSteps}) => {
@@ -68,4 +69,4 @@ export const useStepManager = ({initialSteps, setSteps}) => {
     onDeleteSubStep: handleDeleteSubStep,
     onReorderSteps: handleReorderSteps
   };
-};
+};*/

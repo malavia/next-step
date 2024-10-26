@@ -5,7 +5,7 @@ import { useStepsGenerator } from './hooks/useStepsGenerator';
 import { StepDisplay } from './components/StepDisplay';
 import { CircularProgress } from '@mui/material';
 import { Wand2, Save } from 'lucide-react';
-import { useStepsManagement } from './hooks/useStepsManagement';
+import { useStepsCRUD } from './hooks/useStepsCRUD';
 
 /**
  * Page pour gérer un objectif en temps réel.
@@ -15,7 +15,7 @@ import { useStepsManagement } from './hooks/useStepsManagement';
  * @param {string} objectiveId - ID de l'objectif (facultatif)
  * @returns {ReactElement} Composant JSX pour la page de gestion d'objectif en temps réel
  */
-const RealTimeStepManager = () => {
+const Wrapper = () => {
   const { objectiveId } = useParams();
   const navigate = useNavigate();
 
@@ -36,7 +36,7 @@ const RealTimeStepManager = () => {
     deleteSubStep,
     reorderSteps,
     saveObjective
-  } = useStepsManagement({ objectiveId });
+  } = useStepsCRUD({ objectiveId });
 
   const { 
     isGenerating, 
@@ -151,4 +151,4 @@ const RealTimeStepManager = () => {
   );
 };
 
-export default RealTimeStepManager;
+export default Wrapper;
