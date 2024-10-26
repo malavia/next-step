@@ -143,7 +143,7 @@ export const StepDisplay = ({
 
   return (
     <div className="mt-4 max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-xl font-bold mb-4">Liste des Étapes :</h2>
+      <h2 className="text-xl font-bold mb-4">Liste des {steps.length} Étapes :</h2>
       
       <NewStepInput onAddStep={handleAddStep} />
 

@@ -81,7 +81,6 @@ export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTit
   // Save objective
   const saveObjective = async () => {
     if (!user || !title.trim() || !steps.length) return;
-    console.log('sdq');
     setSaveLoading(true);
     setSaveError(null);
 

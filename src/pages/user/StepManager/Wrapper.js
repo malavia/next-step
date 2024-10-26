@@ -43,14 +43,14 @@ const Wrapper = () => {
     startGeneration, 
     stopGeneration 
   } = useStepsGenerator({ 
-    onStepsGenerated: setSteps,
+    setSteps,
     title 
   });
 
   const handleSave = async () => {
     const savedId = await saveObjective();
     if (savedId && !objectiveId) {
-      navigate(`/test/realtime/${savedId}`);
+      navigate(`/realTimeStepManager/${savedId}`);
     }
   };
 
@@ -68,8 +68,7 @@ const Wrapper = () => {
         {/* Header avec titre et boutons */}
         <div className="flex gap-4 mb-6">
           
-        <span className="text-3xl font-bold">Etapes</span>
-        nombre : {steps.length}
+        <span className="text-2xl font-bold">Mon Objectif :</span>
 
           <input
             type="text"
@@ -127,13 +126,8 @@ const Wrapper = () => {
             {saveError}
           </div>
         )}
+
         {/* Affichage des étapes */}
-
-        
-        {steps.map((subStep) => (
-    <div key={subStep.id}>{subStep.content}</div>
-  ))}
-
         <StepDisplay
           steps={steps}
           loading={loading}
