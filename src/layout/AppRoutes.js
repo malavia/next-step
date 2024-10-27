@@ -10,6 +10,7 @@ import { Routes, Route } from 'react-router-dom';
 import Accueil from '../pages/user/Accueil';
 import Llm from '../pages/test/llm';
 import RealTimeStepManager from '../pages/user/StepManager/Wrapper';
+import Settings from '../pages/user/Settings/wrapper';
 
 
 
@@ -26,6 +27,7 @@ const AppRoutes = () => {
 
             <Route path="/RealTimeStepManager" element={<RealTimeStepManager />} />
             <Route path="/RealTimeStepManager/:objectiveId" element={<RealTimeStepManager />} />
+            <Route path="/Settings" element={<Settings />} />
      
           </Routes>
   );

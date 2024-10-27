@@ -5,6 +5,7 @@ import React from 'react';
 import  UserProvider  from './AuthProvider';  // Contexte pour gérer l'utilisateur
 import { SnackbarProvider } from '../components/ui/Snackbar/SnackbarContext';
 
+
 const ContextProvider = ({ children }) => {
   return (
     <SnackbarProvider> 

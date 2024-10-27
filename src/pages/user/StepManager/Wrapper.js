@@ -63,7 +63,7 @@ const Wrapper = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-6 bg-gray-100 min-h-screen dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <div className="max-w-3xl mx-auto">
         {/* Header avec titre et boutons */}
         <div className="flex gap-4 mb-6">
@@ -75,7 +75,7 @@ const Wrapper = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Entrez le titre de l'objectif"
-            className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
           />
 
           <button 

@@ -16,6 +16,8 @@ import { useAuth } from '../context/AuthProvider';
 const Sidebar = () => {
 
   const { user, loading } = useAuth();
+  const linkClass =  "block py-2 px-4 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700";
+
   // Afficher un message pendant que l'authentification se charge
   if (loading) {
     return <div>Chargement...</div>;
@@ -23,18 +25,25 @@ const Sidebar = () => {
 
 
   return (
-    <aside style={{ width: '250px', padding: '20px', backgroundColor: '#f8f9fa', borderRight: '1px solid #e1e1e1' }}>    
+    <aside className="w-64 p-5 bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-700 h-full">
 
 
-      <ul style={{ listStyleType: 'none', padding: 0 }}>  
-        <li>
-          <Link to="/Accueil" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>Accueil</Link>
+
+      <ul className="space-y-2">
+        <li>  
+          Hi, {user.email}
         </li>
         <li>
-          <Link to="/Llm" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>llm</Link>
+          <Link to="/Accueil" className={linkClass}>     Accueil </Link>
         </li>
         <li>
-          <Link to="/realTimeStepManager" style={{ textDecoration: 'none', padding: '10px', display: 'block' }}>realTimeStepManager</Link>
+          <Link to="/Llm" className={linkClass}>       LLM </Link>
+        </li>
+        <li>
+          <Link to="/realTimeStepManager" className={linkClass}>      RealTimeStepManager </Link>
+        </li>
+        <li>
+          <Link to="/settings" className={linkClass}>     settings  </Link>
         </li>
       </ul>
 
