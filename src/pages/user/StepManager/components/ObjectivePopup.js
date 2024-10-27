@@ -15,37 +15,27 @@ import Step2Metrics from './Metrics';
 const ObjectivePopup = ({ 
   isOpen, 
   onClose, 
-  onSave, 
-  initialTitle = '', 
-  initialDescription = '' 
+  onSave,
+  objectiveData
 }) => {
 
-  // État local pour les champs du formulaire
-  const [formData, setFormData] = useState({
-    title: initialTitle,
-    //category: '',
-    description: initialDescription,
-    metrics: {
-      initialValue: 0,
-      targetValue: 0,
-      unit: ''
-    },
-    term: '',
-    deadline: ''
-  });
+  
 
-  useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      title: initialTitle,
-      description: initialDescription,
-      metrics: {
-        initialValue: prev.metrics?.initialValue || 0,
-        targetValue: prev.metrics?.targetValue || 0,
-        unit: prev.metrics?.unit || ''
-      }
-    }));
-  }, [initialTitle, initialDescription]);
+//console.log('objectiveData', objectiveData); // ancienne donnée
+const [formData, setFormData] = useState(objectiveData || {
+  title: '',
+  description: '',
+  metrics: {
+    initialValue: 0,
+    targetValue: 0,
+    unit: ''
+  },
+  term: '',
+  deadline: ''
+});
+
+  console.log('formData', formData); // new donnée
+
   
 
   // Gestion des modifications des champs
@@ -78,7 +68,7 @@ const ObjectivePopup = ({
             <Input
               id="title"
               name="title"
-              value={formData.title}
+              value={formData?.title}
               onChange={handleChange}
               placeholder="Titre de l'objectif"
               className="mt-1"
@@ -90,18 +80,17 @@ const ObjectivePopup = ({
             <Textarea
               id="description"
               name="description"
-              value={formData.description}
+              value={formData?.description}
               onChange={handleChange}
               placeholder="Deécrivez votre objectif en détail..."
               className="mt-1"
               rows={4}
             />
           </div>
-
           <Step2Metrics
             formData={formData}
-            setFormData={setFormData}
-          />
+            setFormData={setFormData}></Step2Metrics>
+
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button variant="outline" onClick={onClose}>

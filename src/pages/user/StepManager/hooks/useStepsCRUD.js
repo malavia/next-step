@@ -41,12 +41,22 @@ import { useAuth } from '../../../../context/AuthProvider';
  * @returns {Function} refreshObjective - Function to refresh the objective data.
  */
 export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTitle = '' }) => {
+  const [objectiveData, setObjectiveData] = useState(null);
   const [steps, setSteps] = useState(initialSteps);
   const [title, setTitle] = useState(initialTitle);
+  const [status, setStatus] = useState('draft');
   const [loading, setLoading] = useState(objectiveId ? true : false);
   const [error, setError] = useState(null);
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveError, setSaveError] = useState(null);
+
+  const [formData, setFormData] = useState({
+    description: '',
+    metrics: '',
+    term: '',
+    deadline: '',
+  });
+
   const { user } = useAuth();
   const db = getFirestore();
 
@@ -63,10 +73,13 @@ export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTit
       const objectiveDoc = await getDoc(objectiveRef);
 
       if (objectiveDoc.exists()) {
-        const objectiveData = objectiveDoc.data();
-        console.log('Données chargées:', objectiveData);
-        setSteps(objectiveData.steps || []);
-        setTitle(objectiveData.title || '');
+        const fetchedData = objectiveDoc.data(); // Utilisation de fetchedData pour éviter confusion
+        console.log('Données chargées:', fetchedData);
+        
+        setObjectiveData(fetchedData); // Enregistrement dans objectiveData
+        setSteps(fetchedData.steps || []);
+        setTitle(fetchedData.title || '');
+        setStatus(fetchedData.status || 'draft');
       } else {
         setError("Objectif non trouvé");
       }
@@ -78,12 +91,72 @@ export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTit
     }
   };
 
+    // Fonction pour déterminer le statut "draft" ou "complete" selon les champs
+  const determineStatus = (formData) => {
+    return formData.title.trim() && steps.length > 0 ? "complete" : "draft";
+  };
+
   // Save objective
-  const saveObjective = async () => {
-    if (!user || !title.trim() || !steps.length) return;
+  const saveObjective = async (formData2) => {
+
+    console.log('Sauvegarde de l\'objectif dans usetepsmanagement.js');
+    console.log(formData2);
+    if (!user) return;
+    //if (!user || !title.trim() || !steps.length) return;
     setSaveLoading(true);
     setSaveError(null);
 
+
+          // Structure des données pour Firestore
+          const formData = {
+            title: formData2.title,
+            description: formData2.description,
+            metrics: formData2.metrics,
+            term: formData2.term,
+            deadline: formData2.deadline,
+            updatedAt: serverTimestamp(),
+            status: determineStatus(formData2),
+            steps: steps
+          };
+
+          console.log('saveObjective', formData);
+/*
+    const objectiveData = {
+      title: title,
+      description: formData.description,
+      metrics: formData.metrics,
+      term: formData.term,
+      deadline: formData.deadline,
+      steps: steps,
+      updatedAt: serverTimestamp(),
+      createdAt: objectiveId ? undefined : serverTimestamp(), // Ajout de createdAt uniquement pour un nouvel objectif
+      status: determineStatus() // Fonction pour déterminer le statut
+    };*/
+  
+    try {
+      if (!objectiveId) {
+        // Création d'un nouveau document
+        const newDocRef = doc(collection(db, `users/${user.uid}/objectives`));
+        await setDoc(newDocRef, { 
+            ...formData, 
+            createdAt: serverTimestamp() 
+        });
+        return newDocRef.id;
+      } else {
+        // Mise à jour d'un objectif existant
+        const objectiveRef = doc(db, `users/${user.uid}/objectives`, objectiveId);
+        await updateDoc(objectiveRef, formData);
+        return objectiveId;
+      }
+    } catch (err) {
+      console.error('Erreur lors de la sauvegarde:', err);
+      setSaveError("Erreur lors de la sauvegarde");
+      return null;
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+/*
     try {
       const objectiveData = {
         title,
@@ -114,7 +187,7 @@ export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTit
     } finally {
       setSaveLoading(false);
     }
-  };
+  };*/
 
   // Update step
   const updateStep = async (updatedStep) => {
@@ -198,8 +271,10 @@ export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTit
 
   return {
    // États
+   objectiveData,
    steps,
    title,
+   status,
    loading,
    error,
    saveLoading,
@@ -208,6 +283,7 @@ export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTit
    // Setters
    setTitle,
    setSteps,
+   setObjectiveData,
    
    // CRUD Steps
    addStep,
@@ -221,7 +297,6 @@ export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTit
    
    // Autres opérations
    reorderSteps,
-   saveObjective,
-   refreshObjective: fetchObjective
+   saveObjective
   };
 };

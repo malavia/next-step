@@ -22,10 +22,13 @@ const Wrapper = () => {
   const navigate = useNavigate();
 
   const {
+    objectiveData,
+    setObjectiveData,
     steps,
     setSteps,
     title,
     setTitle,
+    status,
     loading,
     error,
     saveLoading,
@@ -73,7 +76,7 @@ const Wrapper = () => {
     try {
       // Mise à jour du titre de l'objectif
       setTitle(formData.title);
-  
+  /*
       // Structure des données pour Firestore
       const objectiveData = {
         title: formData.title,
@@ -83,10 +86,19 @@ const Wrapper = () => {
         deadline: formData.deadline,
         createdAt: new Date(),
         updatedAt: new Date(),
-      };
+      };*/
+
+      console.log('handleSaveDetailsObjective', formData);
   
       // Appel à la fonction de sauvegarde Firestore depuis useStepsCRUD
-      await saveObjective(objectiveData);
+      setObjectiveData(formData);
+      console.log('setObjectiveData', objectiveData);
+      const savedId = await saveObjective(formData);
+
+      // Mise à jour de la navigation après création d'un nouvel objectif
+      if (!objectiveId && savedId) {
+        navigate(`/realTimeStepManager/${savedId}`);
+      }
   
       // Ferme la popup après la sauvegarde
       setIsPopupOpen(false);
@@ -111,23 +123,26 @@ const Wrapper = () => {
         {/* Header avec titre et boutons */}
         <div className="flex gap-4 mb-6">
           
-        <span className="text-2xl font-bold">Mon Objectif :</span>
+        <span className="text-2xl font-bold">Mon Objectif 
+          {status === 'draft' ? ' (Brouillon)' : ''}
+          :</span>
 
           <input
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={objectiveData.title}
+            onChange={(e) => setObjectiveData({ ...objectiveData, title: e.target.value })}
             placeholder="Entrez le titre de l'objectif"
             className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
           />
-      <button onClick={() => setIsPopupOpen(true)}>Ouvrir la popup</button>
-      <ObjectivePopup
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-        onSave={handleSaveDetailsObjective}
-        initialTitle={title}
-        initialDescription="Description initiale"
-      />
+
+          <button onClick={() => setIsPopupOpen(true)}>Ouvrir la popup</button>
+          <ObjectivePopup
+            isOpen={isPopupOpen}
+            onClose={() => setIsPopupOpen(false)}
+            onSave={handleSaveDetailsObjective}
+            objectiveData={objectiveData}
+          />
+          
           <button 
             onClick={startGeneration}
             disabled={isGenerating || !title.trim()}
@@ -152,11 +167,11 @@ const Wrapper = () => {
 
           <button
             onClick={handleSave}
-            disabled={!saveLoading && !isGenerating && title.trim() && steps.length}
+            disabled={!saveLoading && !isGenerating}
 
 
             className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
-              !saveLoading && !isGenerating && title.trim() && steps.length
+              !saveLoading && !isGenerating
                 ? 'bg-green-500 hover:bg-green-600 text-white'
                 : 'bg-gray-400 cursor-not-allowed'
             }`}
