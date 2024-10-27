@@ -1,13 +1,17 @@
 // config-overrides.js
+
 const path = require('path');
 const { override, addWebpackAlias } = require('customize-cra');
 
 module.exports = override(
   addWebpackAlias({
-    '@components': path.resolve(__dirname, 'src/components'),
+    '@': path.resolve(__dirname, 'src'),
   }),
+
   (config) => {
-    // Configuration Jest personnalisée
+    // Ajout des extensions .tsx, .ts pour la résolution de Webpack
+    config.resolve.extensions = [...config.resolve.extensions, '.js', '.jsx', '.ts', '.tsx'];
+
     if (config.jest) {
       config.jest.moduleNameMapper = {
         ...config.jest.moduleNameMapper,

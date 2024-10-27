@@ -1,11 +1,12 @@
 // RealTimeStepManager.jsx
-import React from 'react';
+import React, {useState} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStepsGenerator } from './hooks/useStepsGenerator';
 import { StepDisplay } from './components/StepDisplay';
 import { CircularProgress } from '@mui/material';
 import { Wand2, Save } from 'lucide-react';
 import { useStepsCRUD } from './hooks/useStepsCRUD';
+import  ObjectivePopup  from './components/ObjectivePopup';
 
 /**
  * Page pour gérer un objectif en temps réel.
@@ -16,6 +17,7 @@ import { useStepsCRUD } from './hooks/useStepsCRUD';
  * @returns {ReactElement} Composant JSX pour la page de gestion d'objectif en temps réel
  */
 const Wrapper = () => {
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const { objectiveId } = useParams();
   const navigate = useNavigate();
 
@@ -54,6 +56,18 @@ const Wrapper = () => {
     }
   };
 
+  const handleSaveDetailsObjective = (formData) => {
+
+
+    // Les données du formulaire seront disponibles ici
+    console.log("formData", formData);
+    // Mise à jour du titre dans le composant parent
+    //setObjectiveTitle(formData.title);
+    // Ici vous pourrez ajouter la logique pour sauvegarder dans Firestore
+
+    setIsPopupOpen(false);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -77,7 +91,14 @@ const Wrapper = () => {
             placeholder="Entrez le titre de l'objectif"
             className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
           />
-
+      <button onClick={() => setIsPopupOpen(true)}>Ouvrir la popup</button>
+      <ObjectivePopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        onSave={handleSaveDetailsObjective}
+        initialTitle={title}
+        initialDescription="Description initiale"
+      />
           <button 
             onClick={startGeneration}
             disabled={isGenerating || !title.trim()}
