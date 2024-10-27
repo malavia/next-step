@@ -4,7 +4,7 @@ import { Plus, Trash2, Save, X, GripVertical } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 
-const EditableContent = ({ content, onSave }) => {
+const EditableContent = ({ content, placeholder, onSave }) => {
   const [editedContent, setEditedContent] = useState(content);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -27,7 +27,8 @@ const EditableContent = ({ content, onSave }) => {
       {isEditing ? (
         <input
           type="text"
-          value={editedContent}
+          value={editedContent === placeholder ? "" : editedContent}
+          placeholder={placeholder}
           onChange={(e) => setEditedContent(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
@@ -215,6 +216,7 @@ export const StepDisplay = ({
                             <div className="flex-1 flex items-center">
                               <EditableContent
                                 content={subStep.content}
+                                placeholder={'Nouvelle sous-étape'}
                                 onSave={(newContent) => onUpdateSubStep(step.id, { ...subStep, content: newContent })}
                               />
                             </div>

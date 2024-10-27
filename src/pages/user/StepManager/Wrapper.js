@@ -102,12 +102,15 @@ const Wrapper = () => {
 
           <button
             onClick={handleSave}
-            disabled={saveLoading || isGenerating || !title.trim() || !steps.length}
+            disabled={!saveLoading && !isGenerating && title.trim() && steps.length}
+
+
             className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
-              saveLoading || isGenerating || !title.trim() || !steps.length
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-green-500 hover:bg-green-600 text-white'
+              !saveLoading && !isGenerating && title.trim() && steps.length
+                ? 'bg-green-500 hover:bg-green-600 text-white'
+                : 'bg-gray-400 cursor-not-allowed'
             }`}
+
           >
             <Save className="h-4 w-4" />
             {saveLoading ? 'Sauvegarde...' : 'Enregistrer'}
