@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
+import Step2Metrics from './Metrics';
+
 const ObjectivePopup = ({ 
   isOpen, 
   onClose, 
@@ -17,19 +19,34 @@ const ObjectivePopup = ({
   initialTitle = '', 
   initialDescription = '' 
 }) => {
+
   // État local pour les champs du formulaire
   const [formData, setFormData] = useState({
     title: initialTitle,
-    description: initialDescription
+    //category: '',
+    description: initialDescription,
+    metrics: {
+      initialValue: 0,
+      targetValue: 0,
+      unit: ''
+    },
+    term: '',
+    deadline: ''
   });
 
-  // Mise à jour des champs si les props changent
   useEffect(() => {
-    setFormData({
+    setFormData(prev => ({
+      ...prev,
       title: initialTitle,
-      description: initialDescription
-    });
+      description: initialDescription,
+      metrics: {
+        initialValue: prev.metrics?.initialValue || 0,
+        targetValue: prev.metrics?.targetValue || 0,
+        unit: prev.metrics?.unit || ''
+      }
+    }));
   }, [initialTitle, initialDescription]);
+  
 
   // Gestion des modifications des champs
   const handleChange = (e) => {
@@ -81,6 +98,11 @@ const ObjectivePopup = ({
             />
           </div>
 
+          <Step2Metrics
+            formData={formData}
+            setFormData={setFormData}
+          />
+
           <div className="flex justify-end space-x-2 pt-4">
             <Button variant="outline" onClick={onClose}>
               Annuler
@@ -89,6 +111,8 @@ const ObjectivePopup = ({
               Sauvegarder
             </Button>
           </div>
+
+
         </div>
       </DialogContent>
     </Dialog>

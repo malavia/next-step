@@ -55,7 +55,7 @@ const Wrapper = () => {
       navigate(`/realTimeStepManager/${savedId}`);
     }
   };
-
+/*
   const handleSaveDetailsObjective = (formData) => {
 
 
@@ -66,7 +66,36 @@ const Wrapper = () => {
     // Ici vous pourrez ajouter la logique pour sauvegarder dans Firestore
 
     setIsPopupOpen(false);
+  };*/
+
+
+  const handleSaveDetailsObjective = async (formData) => {
+    try {
+      // Mise à jour du titre de l'objectif
+      setTitle(formData.title);
+  
+      // Structure des données pour Firestore
+      const objectiveData = {
+        title: formData.title,
+        description: formData.description,
+        metrics: formData.metrics,
+        term: formData.term,
+        deadline: formData.deadline,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+  
+      // Appel à la fonction de sauvegarde Firestore depuis useStepsCRUD
+      await saveObjective(objectiveData);
+  
+      // Ferme la popup après la sauvegarde
+      setIsPopupOpen(false);
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde de l'objectif : ", error);
+    }
   };
+
+  
 
   if (loading) {
     return (
