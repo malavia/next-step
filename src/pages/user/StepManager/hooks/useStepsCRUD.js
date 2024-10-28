@@ -136,6 +136,8 @@ const [objectiveData, setObjectiveData] = useState({
       status: determineStatus(),
     };
 
+    setStatus(determineStatus());
+
     try {
       return (!objectiveId) ?  CreateObjectiveInFirestore(dataToSaveFinal) : UpdateObjectiveInFirestore(dataToSaveFinal);
     } catch (err) {

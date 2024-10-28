@@ -41,7 +41,7 @@ const ObjectivePopup = ({
       <DialogContent className="max-w-lg bg-white dark:bg-slate-800 dark:text-white">
         <DialogHeader>
           <DialogTitle>
-            Mon Objectif
+            Les détails de mon objectif
           </DialogTitle>
         </DialogHeader>
 

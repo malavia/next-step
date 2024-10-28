@@ -1,12 +1,50 @@
 // RealTimeStepManager.jsx
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStepsGenerator } from './hooks/useStepsGenerator';
 import { StepDisplay } from './components/StepDisplay';
 import { CircularProgress } from '@mui/material';
-import { Wand2, Save } from 'lucide-react';
+import { Wand2, Save, Edit } from 'lucide-react';
 import { useStepsCRUD } from './hooks/useStepsCRUD';
-import  ObjectivePopup  from './components/ObjectivePopup';
+import ObjectivePopup from './components/ObjectivePopup';
+
+const EditableContent = ({ content, placeholder, onSave }) => {
+  const [editedContent, setEditedContent] = useState(content);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleBlur = () => {
+    if (editedContent.trim() !== content) {
+      onSave(editedContent);
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.target.blur();
+    }
+  };
+
+  return (
+    <div className="flex-1" onClick={() => setIsEditing(true)}>
+      {isEditing || (!content && placeholder) ? (
+        <input
+          type="text"
+          value={editedContent === placeholder ? "" : editedContent}
+          placeholder={placeholder}
+          onChange={(e) => setEditedContent(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          className="w-full px-2 py-1 border rounded dark:bg-gray-800 dark:text-gray-100"
+          autoFocus
+        />
+      ) : (
+        <span className="cursor-pointer">{content}</span>
+      )}
+    </div>
+  );
+};
 
 /**
  * Page pour gérer un objectif en temps réel.
@@ -49,42 +87,27 @@ const Wrapper = () => {
   } = useStepsGenerator({ setSteps, title});
 
   const handleSaveGlobal = async () => {
-
-    console.log('handleSaveGlobal', steps);
-
     const updatedData = {
       ...objectiveData,
       steps: steps // Mettez à jour steps dans objectiveData
     };
-
-    console.log('handleSave', updatedData);
     const savedId = await saveObjective(updatedData);
     if (savedId && !objectiveId) {
       navigate(`/realTimeStepManager/${savedId}`);
     }
   };
 
-
-  const handleSaveDetailsObjective = async () => {
+  const handleSavePopup = async () => {
     try {
-  
-      // Appel à la fonction de sauvegarde Firestore depuis useStepsCRUD
-      console.log('setObjectiveData', objectiveData);
       const savedId = await saveObjective();
-
-      // Mise à jour de la navigation après création d'un nouvel objectif
       if (!objectiveId && savedId) {
         navigate(`/realTimeStepManager/${savedId}`);
       }
-  
-      // Ferme la popup après la sauvegarde
       setIsPopupOpen(false);
     } catch (error) {
       console.error("Erreur lors de la sauvegarde de l'objectif : ", error);
     }
   };
-
-  
 
   if (loading) {
     return (
@@ -99,28 +122,23 @@ const Wrapper = () => {
       <div className="max-w-3xl mx-auto">
         {/* Header avec titre et boutons */}
         <div className="flex gap-4 mb-6">
-          
-        <span className="text-2xl font-bold">Mon Objectif 
-          {status === 'draft' ? ' (Brouillon)' : ''}
-          :</span>
-
-          <input
-            type="text"
-            value={objectiveData.title}
-            onChange={(e) => setObjectiveData({ ...objectiveData, title: e.target.value })}
-            placeholder="Entrez le titre de l'objectif"
-            className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
-          />
-
-          <button onClick={() => setIsPopupOpen(true)}>Ouvrir la popup {objectiveData.title}</button>
+          <div className={`flex-1 ${status === 'draft' ? 'bg-red-100 dark:bg-red-900 p-2 rounded' : ''}`}>
+            <EditableContent
+              content={objectiveData.title}
+              placeholder="Entrez le titre de l'objectif"
+              onSave={(newTitle) => setObjectiveData({ ...objectiveData, title: newTitle })}
+            />
+          </div>
+          <button onClick={() => setIsPopupOpen(true)}>
+            <Edit className="h-4 w-4" />
+          </button>
           <ObjectivePopup
             isOpen={isPopupOpen}
             onClose={() => setIsPopupOpen(false)}
-            onSave={handleSaveDetailsObjective}
+            onSave={handleSavePopup}
             objectiveData={objectiveData}
             setObjectiveData={setObjectiveData}
           />
-          
           <button 
             onClick={startGeneration}
             disabled={isGenerating || !objectiveData.title.trim()}
@@ -133,7 +151,6 @@ const Wrapper = () => {
             <Wand2 className="h-4 w-4" />
             {isGenerating ? 'Génération en cours...' : 'Générer les étapes'}
           </button>
-          
           {isGenerating && (
             <button 
               onClick={stopGeneration}
@@ -142,17 +159,14 @@ const Wrapper = () => {
               Arrêter la génération
             </button>
           )}
-
           <button
             onClick={handleSaveGlobal}
-            disabled={saveLoading ||isGenerating}
-
+            disabled={saveLoading || isGenerating}
             className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
               !saveLoading && !isGenerating
                 ? 'bg-green-500 hover:bg-green-600 text-white'
                 : 'bg-gray-400 cursor-not-allowed'
             }`}
-
           >
             <Save className="h-4 w-4" />
             {saveLoading ? 'Sauvegarde...' : 'Enregistrer'}
@@ -165,7 +179,6 @@ const Wrapper = () => {
             {error}
           </div>
         )}
-        
         {saveError && (
           <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
             {saveError}
