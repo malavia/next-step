@@ -106,15 +106,6 @@ const Step2Metrics = ({ objectiveData, setObjectiveData  }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-/*
-  useEffect(() => {
-
-    console.log("localData when returning to component:", localData);
-    if (initialData) {
-      setLocalData(initialData);
-    }
-  }, [initialData]);*/
-
   return (
     <div className="space-y-6">
       {/* Champs pour les métriques */}

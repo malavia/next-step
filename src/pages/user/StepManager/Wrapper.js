@@ -4,47 +4,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useStepsGenerator } from './hooks/useStepsGenerator';
 import { StepDisplay } from './components/StepDisplay';
 import { CircularProgress } from '@mui/material';
-import { Wand2, Save, Edit } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import { useStepsCRUD } from './hooks/useStepsCRUD';
 import ObjectivePopup from './components/ObjectivePopup';
 
-const EditableContent = ({ content, placeholder, onSave }) => {
-  const [editedContent, setEditedContent] = useState(content);
-  const [isEditing, setIsEditing] = useState(false);
-
-  const handleBlur = () => {
-    if (editedContent.trim() !== content) {
-      onSave(editedContent);
-    }
-    setIsEditing(false);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.target.blur();
-    }
-  };
-
-  return (
-    <div className="flex-1" onClick={() => setIsEditing(true)}>
-      {isEditing || (!content && placeholder) ? (
-        <input
-          type="text"
-          value={editedContent === placeholder ? "" : editedContent}
-          placeholder={placeholder}
-          onChange={(e) => setEditedContent(e.target.value)}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          className="w-full px-2 py-1 border rounded dark:bg-gray-800 dark:text-gray-100"
-          autoFocus
-        />
-      ) : (
-        <span className="cursor-pointer">{content}</span>
-      )}
-    </div>
-  );
-};
+import ObjectiveTitleInput from './components/ObjectiveTitleInput';
+import GenerationButtons from './components/GenerationsButtons';
+import SaveButton from './components/SaveButton';
 
 /**
  * Page pour gérer un objectif en temps réel.
@@ -122,16 +88,16 @@ const Wrapper = () => {
       <div className="max-w-3xl mx-auto">
         {/* Header avec titre et boutons */}
         <div className="flex gap-4 mb-6">
-          <div className={`flex-1 ${status === 'draft' ? 'bg-red-100 dark:bg-red-900 p-2 rounded' : ''}`}>
-            <EditableContent
-              content={objectiveData.title}
-              placeholder="Entrez le titre de l'objectif"
-              onSave={(newTitle) => setObjectiveData({ ...objectiveData, title: newTitle })}
-            />
-          </div>
+
+          <ObjectiveTitleInput
+            title={objectiveData.title}
+            onSave={(newTitle) => setObjectiveData({ ...objectiveData, title: newTitle })}
+            status={status}
+          />
           <button onClick={() => setIsPopupOpen(true)}>
             <Edit className="h-4 w-4" />
           </button>
+
           <ObjectivePopup
             isOpen={isPopupOpen}
             onClose={() => setIsPopupOpen(false)}
@@ -139,38 +105,15 @@ const Wrapper = () => {
             objectiveData={objectiveData}
             setObjectiveData={setObjectiveData}
           />
-          <button 
-            onClick={startGeneration}
-            disabled={isGenerating || !objectiveData.title.trim()}
-            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
-              isGenerating || !objectiveData.title.trim()
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-blue-500 hover:bg-blue-600 text-white'
-            }`}
-          >
-            <Wand2 className="h-4 w-4" />
-            {isGenerating ? 'Génération en cours...' : 'Générer les étapes'}
-          </button>
-          {isGenerating && (
-            <button 
-              onClick={stopGeneration}
-              className="px-4 py-2 rounded-lg font-medium bg-red-500 hover:bg-red-600 text-white"
-            >
-              Arrêter la génération
-            </button>
-          )}
-          <button
-            onClick={handleSaveGlobal}
-            disabled={saveLoading || isGenerating}
-            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
-              !saveLoading && !isGenerating
-                ? 'bg-green-500 hover:bg-green-600 text-white'
-                : 'bg-gray-400 cursor-not-allowed'
-            }`}
-          >
-            <Save className="h-4 w-4" />
-            {saveLoading ? 'Sauvegarde...' : 'Enregistrer'}
-          </button>
+
+          <GenerationButtons 
+            startGeneration={startGeneration} 
+            stopGeneration={stopGeneration} 
+            isGenerating={isGenerating} 
+            title={objectiveData.title}
+          />
+
+          <SaveButton onSave={handleSaveGlobal} saveLoading={saveLoading} isGenerating={isGenerating} />
         </div>
 
         {/* Messages d'erreur */}
