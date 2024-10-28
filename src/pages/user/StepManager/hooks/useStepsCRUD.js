@@ -41,7 +41,6 @@ import { useAuth } from '../../../../context/AuthProvider';
  * @returns {Function} refreshObjective - Function to refresh the objective data.
  */
 export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTitle = '' }) => {
-  const [objectiveData, setObjectiveData] = useState(null);
   const [steps, setSteps] = useState(initialSteps);
   const [title, setTitle] = useState(initialTitle);
   const [status, setStatus] = useState('draft');
@@ -50,12 +49,18 @@ export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTit
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
-  const [formData, setFormData] = useState({
-    description: '',
-    metrics: '',
-    term: '',
-    deadline: '',
-  });
+  // Initialise objectiveData avec des valeurs par défaut s'il n'y a pas d'ID objectif
+const [objectiveData, setObjectiveData] = useState({
+  title: initialTitle,
+  description: '',
+  metrics: '',
+  term: {},
+  deadline: '',
+  steps: initialSteps,
+  status: 'draft',
+  createdAt: null,
+  updatedAt: null
+});
 
   const { user } = useAuth();
   const db = getFirestore();
@@ -92,62 +97,47 @@ export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTit
   };
 
     // Fonction pour déterminer le statut "draft" ou "complete" selon les champs
-  const determineStatus = (formData) => {
-    return formData.title.trim() && steps.length > 0 ? "complete" : "draft";
+  const determineStatus = () => {
+    return objectiveData.title.trim() && steps.length > 0 ? "complete" : "draft";
   };
 
-  // Save objective
-  const saveObjective = async (formData2) => {
+  const CreateObjectiveInFirestore = async (dataToSave) => {
+    const newDocRef = doc(collection(db, `users/${user.uid}/objectives`));
+    await setDoc(newDocRef, { 
+      ...dataToSave,
+        createdAt: serverTimestamp() 
+    });
+    return newDocRef.id;
+  }
 
-    console.log('Sauvegarde de l\'objectif dans usetepsmanagement.js');
-    console.log(formData2);
+  const UpdateObjectiveInFirestore = async (dataToSave) => {
+    const objectiveRef = doc(db, `users/${user.uid}/objectives`, objectiveId);
+    await updateDoc(objectiveRef, dataToSave);
+    return objectiveId;
+  }
+
+  // Save objective
+  const saveObjective = async (dataToSave) => {
+
     if (!user) return;
-    //if (!user || !title.trim() || !steps.length) return;
     setSaveLoading(true);
     setSaveError(null);
 
+    // Si dataToSave est vide, utilisez objectiveData
+    const data = dataToSave || objectiveData;
 
-          // Structure des données pour Firestore
-          const formData = {
-            title: formData2.title,
-            description: formData2.description,
-            metrics: formData2.metrics,
-            term: formData2.term,
-            deadline: formData2.deadline,
-            updatedAt: serverTimestamp(),
-            status: determineStatus(formData2),
-            steps: steps
-          };
+    console.log('steps:', steps);
+    console.log('objectiveData:', data.steps);
 
-          console.log('saveObjective', formData);
-/*
-    const objectiveData = {
-      title: title,
-      description: formData.description,
-      metrics: formData.metrics,
-      term: formData.term,
-      deadline: formData.deadline,
-      steps: steps,
+    // Structure des données avec les valeurs de objectiveData
+    const dataToSaveFinal = {
+      ...data,
       updatedAt: serverTimestamp(),
-      createdAt: objectiveId ? undefined : serverTimestamp(), // Ajout de createdAt uniquement pour un nouvel objectif
-      status: determineStatus() // Fonction pour déterminer le statut
-    };*/
-  
+      status: determineStatus(),
+    };
+
     try {
-      if (!objectiveId) {
-        // Création d'un nouveau document
-        const newDocRef = doc(collection(db, `users/${user.uid}/objectives`));
-        await setDoc(newDocRef, { 
-            ...formData, 
-            createdAt: serverTimestamp() 
-        });
-        return newDocRef.id;
-      } else {
-        // Mise à jour d'un objectif existant
-        const objectiveRef = doc(db, `users/${user.uid}/objectives`, objectiveId);
-        await updateDoc(objectiveRef, formData);
-        return objectiveId;
-      }
+      return (!objectiveId) ?  CreateObjectiveInFirestore(dataToSaveFinal) : UpdateObjectiveInFirestore(dataToSaveFinal);
     } catch (err) {
       console.error('Erreur lors de la sauvegarde:', err);
       setSaveError("Erreur lors de la sauvegarde");
@@ -156,38 +146,6 @@ export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTit
       setSaveLoading(false);
     }
   };
-/*
-    try {
-      const objectiveData = {
-        title,
-        steps,
-        updatedAt: serverTimestamp(),
-      };
-
-      if (!objectiveId) {
-        // Create new document
-        const newDocRef = doc(collection(db, `users/${user.uid}/objectives`));
-        await setDoc(newDocRef, {
-          ...objectiveData,
-          createdAt: serverTimestamp(),
-        });
-        return newDocRef.id; // Return new ID for navigation
-      } else {
-        // Update existing document
-        const objectiveRef = doc(db, `users/${user.uid}/objectives`, objectiveId);
-        await updateDoc(objectiveRef, objectiveData);
-        
-        console.log('Sauvegarde effectuée avec succes');
-        return objectiveId;
-      }
-    } catch (err) {
-      console.error('Erreur lors de la sauvegarde:', err);
-      setSaveError("Erreur lors de la sauvegarde");
-      return null;
-    } finally {
-      setSaveLoading(false);
-    }
-  };*/
 
   // Update step
   const updateStep = async (updatedStep) => {

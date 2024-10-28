@@ -17,21 +17,13 @@ import React, { useState, useEffect } from 'react';
  * @returns {ReactElement} A React component with the form fields and a "Next"
  *                        button at the bottom.
  */
-const Step2Metrics = ({ formData, setFormData  }) => {
+
+
+const Step2Metrics = ({ objectiveData, setObjectiveData  }) => {
   const [errors, setErrors] = useState({});
-  /*
-  const handleMetricsChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      metrics: {
-        ...prev.metrics,
-        [field]: value
-      }
-    }));
-  };*/
 
   const handleMetricsChange = (field, value) => {
-    setFormData(prev => ({
+    setObjectiveData(prev => ({
       ...prev,
       metrics: {
         initialValue: prev.metrics?.initialValue || 0,
@@ -44,7 +36,7 @@ const Step2Metrics = ({ formData, setFormData  }) => {
 
   const handleTermSelection = (term) => {
     const termDate = getTermDate(term);
-    setFormData(prev => ({
+    setObjectiveData(prev => ({
       ...prev,
       term,
       deadline: term === 'custom' ? prev.deadline : termDate.toISOString().split('T')[0]
@@ -53,7 +45,7 @@ const Step2Metrics = ({ formData, setFormData  }) => {
   };
 
   const handleDateChange = (value) => {
-    setFormData(prev => ({
+    setObjectiveData(prev => ({
       ...prev,
       deadline: value
     }));
@@ -86,15 +78,15 @@ const Step2Metrics = ({ formData, setFormData  }) => {
 
   const validateStep = () => {
     const newErrors = {};
-    const selectedDate = new Date(formData.deadline);
+    const selectedDate = new Date(objectiveData.deadline);
 
-    if (!formData.term && !formData.deadline) {
+    if (!objectiveData.term && !objectiveData.deadline) {
       newErrors.term = 'Veuillez sélectionner un terme ou une date spécifique';
     }
 
     // Validation pour la date personnalisée
-    if (formData.term === 'custom') {
-      if (!formData.deadline || isNaN(selectedDate.getTime())) {
+    if (objectiveData.term === 'custom') {
+      if (!objectiveData.deadline || isNaN(selectedDate.getTime())) {
         newErrors.deadline = 'Veuillez choisir une date valide';
       } else {
         const minDate = new Date();
@@ -135,7 +127,7 @@ const Step2Metrics = ({ formData, setFormData  }) => {
             id="initialValue"
             type="number"
             min="0" // Empêche les valeurs négatives
-            value={formData.metrics.initialValue}
+            value={objectiveData.metrics.initialValue}
             onChange={(e) => handleMetricsChange('initialValue', e.target.value)}
             className="w-full p-2 border rounded-lg"
           />
@@ -148,7 +140,7 @@ const Step2Metrics = ({ formData, setFormData  }) => {
             id="targetValue"
             type="number"
             min="0" // Empêche les valeurs négatives
-            value={formData.metrics.targetValue}
+            value={objectiveData.metrics.targetValue}
             onChange={(e) => handleMetricsChange('targetValue', e.target.value)}
             className="w-full p-2 border rounded-lg"
           />
@@ -160,7 +152,7 @@ const Step2Metrics = ({ formData, setFormData  }) => {
           <input
             id="unit"
             type="text"
-            value={formData.metrics.unit}
+            value={objectiveData.metrics.unit}
             onChange={(e) => handleMetricsChange('unit', e.target.value)}
             className="w-full p-2 border rounded-lg"
             placeholder="kg, km, heures..."
@@ -171,13 +163,13 @@ const Step2Metrics = ({ formData, setFormData  }) => {
       {/* Choix du terme */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          Terme de l'objectif <span className="text-red-500">*</span>
+          Terme de l'objectif
         </label>
         <div className="grid grid-cols-3 gap-4 mb-4">
           <button
             onClick={() => handleTermSelection('court')}
             className={`p-4 rounded-lg border-2 transition-all ${
-              formData.term === 'court' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-200'
+              objectiveData.term === 'court' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-200'
             }`}
           >
             <h3 className="font-medium mb-1">Court terme</h3>
@@ -186,7 +178,7 @@ const Step2Metrics = ({ formData, setFormData  }) => {
           <button
             onClick={() => handleTermSelection('moyen')}
             className={`p-4 rounded-lg border-2 transition-all ${
-              formData.term === 'moyen' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-200'
+              objectiveData.term === 'moyen' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-200'
             }`}
           >
             <h3 className="font-medium mb-1">Moyen terme</h3>
@@ -195,7 +187,7 @@ const Step2Metrics = ({ formData, setFormData  }) => {
           <button
             onClick={() => handleTermSelection('long')}
             className={`p-4 rounded-lg border-2 transition-all ${
-              formData.term === 'long' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-200'
+              objectiveData.term === 'long' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-200'
             }`}
           >
             <h3 className="font-medium mb-1">Long terme</h3>
@@ -204,10 +196,10 @@ const Step2Metrics = ({ formData, setFormData  }) => {
         </div>
 
         {/* Affichage de la date sélectionnée */}
-        {(formData.term || formData.deadline) && (
+        {(objectiveData.term || objectiveData.deadline) && (
           <div className="mt-4 text-sm text-gray-500">
             <strong>Date choisie : </strong>
-            {formData.term === 'custom' ? formatDate(formData.deadline) : formatDate(getTermDate(formData.term))}
+            {objectiveData.term === 'custom' ? formatDate(objectiveData.deadline) : formatDate(getTermDate(objectiveData.term))}
           </div>
         )}
 
@@ -219,7 +211,7 @@ const Step2Metrics = ({ formData, setFormData  }) => {
             <input
               type="checkbox"
               id="customDate"
-              checked={formData.term === 'custom'}
+              checked={objectiveData.term === 'custom'}
               onChange={(e) => {
                 if (e.target.checked) {
                   handleTermSelection('custom');
@@ -234,16 +226,16 @@ const Step2Metrics = ({ formData, setFormData  }) => {
             </label>
           </div>
 
-          {formData.term === 'custom' && (
+          {objectiveData.term === 'custom' && (
             <div>
               <input
                 type="date"
-                value={formData.deadline || ''} // Utilisez une chaîne vide si deadline est null ou undefined
+                value={objectiveData.deadline || ''} // Utilisez une chaîne vide si deadline est null ou undefined
 
 
                 onChange={(e) => {
                   const newDate = e.target.value;                  
-                  //handleChange('deadline', newDate);
+                  handleDateChange(newDate);
                   if (errors.deadline) {
                     setErrors({...errors, deadline: ''});
                   }

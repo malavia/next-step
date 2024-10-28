@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,32 +16,15 @@ const ObjectivePopup = ({
   isOpen, 
   onClose, 
   onSave,
-  objectiveData
+  objectiveData, 
+  setObjectiveData
 }) => {
 
-  
-
-//console.log('objectiveData', objectiveData); // ancienne donnée
-const [formData, setFormData] = useState(objectiveData || {
-  title: '',
-  description: '',
-  metrics: {
-    initialValue: 0,
-    targetValue: 0,
-    unit: ''
-  },
-  term: '',
-  deadline: ''
-});
-
-  console.log('formData', formData); // new donnée
-
-  
 
   // Gestion des modifications des champs
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setObjectiveData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -49,7 +32,7 @@ const [formData, setFormData] = useState(objectiveData || {
 
   // Gestion de la sauvegarde
   const handleSave = () => {
-    onSave(formData);
+    onSave();
     onClose();
   };
 
@@ -68,7 +51,7 @@ const [formData, setFormData] = useState(objectiveData || {
             <Input
               id="title"
               name="title"
-              value={formData?.title}
+              value={objectiveData.title}
               onChange={handleChange}
               placeholder="Titre de l'objectif"
               className="mt-1"
@@ -80,7 +63,7 @@ const [formData, setFormData] = useState(objectiveData || {
             <Textarea
               id="description"
               name="description"
-              value={formData?.description}
+              value={objectiveData.description}
               onChange={handleChange}
               placeholder="Deécrivez votre objectif en détail..."
               className="mt-1"
@@ -88,8 +71,9 @@ const [formData, setFormData] = useState(objectiveData || {
             />
           </div>
           <Step2Metrics
-            formData={formData}
-            setFormData={setFormData}></Step2Metrics>
+            objectiveData={objectiveData}
+            setObjectiveData={setObjectiveData}>
+          </Step2Metrics>
 
 
           <div className="flex justify-end space-x-2 pt-4">

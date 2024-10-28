@@ -27,7 +27,6 @@ const Wrapper = () => {
     steps,
     setSteps,
     title,
-    setTitle,
     status,
     loading,
     error,
@@ -47,53 +46,31 @@ const Wrapper = () => {
     isGenerating, 
     startGeneration, 
     stopGeneration 
-  } = useStepsGenerator({ 
-    setSteps,
-    title 
-  });
+  } = useStepsGenerator({ setSteps, title});
 
-  const handleSave = async () => {
-    const savedId = await saveObjective();
+  const handleSaveGlobal = async () => {
+
+    console.log('handleSaveGlobal', steps);
+
+    const updatedData = {
+      ...objectiveData,
+      steps: steps // Mettez à jour steps dans objectiveData
+    };
+
+    console.log('handleSave', updatedData);
+    const savedId = await saveObjective(updatedData);
     if (savedId && !objectiveId) {
       navigate(`/realTimeStepManager/${savedId}`);
     }
   };
-/*
-  const handleSaveDetailsObjective = (formData) => {
 
 
-    // Les données du formulaire seront disponibles ici
-    console.log("formData", formData);
-    // Mise à jour du titre dans le composant parent
-    //setObjectiveTitle(formData.title);
-    // Ici vous pourrez ajouter la logique pour sauvegarder dans Firestore
-
-    setIsPopupOpen(false);
-  };*/
-
-
-  const handleSaveDetailsObjective = async (formData) => {
+  const handleSaveDetailsObjective = async () => {
     try {
-      // Mise à jour du titre de l'objectif
-      setTitle(formData.title);
-  /*
-      // Structure des données pour Firestore
-      const objectiveData = {
-        title: formData.title,
-        description: formData.description,
-        metrics: formData.metrics,
-        term: formData.term,
-        deadline: formData.deadline,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };*/
-
-      console.log('handleSaveDetailsObjective', formData);
   
       // Appel à la fonction de sauvegarde Firestore depuis useStepsCRUD
-      setObjectiveData(formData);
       console.log('setObjectiveData', objectiveData);
-      const savedId = await saveObjective(formData);
+      const savedId = await saveObjective();
 
       // Mise à jour de la navigation après création d'un nouvel objectif
       if (!objectiveId && savedId) {
@@ -135,19 +112,20 @@ const Wrapper = () => {
             className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
           />
 
-          <button onClick={() => setIsPopupOpen(true)}>Ouvrir la popup</button>
+          <button onClick={() => setIsPopupOpen(true)}>Ouvrir la popup {objectiveData.title}</button>
           <ObjectivePopup
             isOpen={isPopupOpen}
             onClose={() => setIsPopupOpen(false)}
             onSave={handleSaveDetailsObjective}
             objectiveData={objectiveData}
+            setObjectiveData={setObjectiveData}
           />
           
           <button 
             onClick={startGeneration}
-            disabled={isGenerating || !title.trim()}
+            disabled={isGenerating || !objectiveData.title.trim()}
             className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
-              isGenerating || !title.trim()
+              isGenerating || !objectiveData.title.trim()
                 ? 'bg-gray-400 cursor-not-allowed' 
                 : 'bg-blue-500 hover:bg-blue-600 text-white'
             }`}
@@ -166,9 +144,8 @@ const Wrapper = () => {
           )}
 
           <button
-            onClick={handleSave}
-            disabled={!saveLoading && !isGenerating}
-
+            onClick={handleSaveGlobal}
+            disabled={saveLoading ||isGenerating}
 
             className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${
               !saveLoading && !isGenerating
