@@ -30,6 +30,7 @@ export const SnackbarProvider = ({ children }) => {
   });
 
   const showSnackbar = (message, severity = 'info') => {
+    console.log('showSnackbar', message, severity);
     setSnackbarState({ open: true, message, severity });
   };
 

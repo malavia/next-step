@@ -11,6 +11,7 @@ import ObjectivePopup from './components/ObjectivePopup';
 import ObjectiveTitleInput from './components/ObjectiveTitleInput';
 import GenerationButtons from './components/GenerationsButtons';
 import SaveButton from './components/SaveButton';
+import { useSnackbar } from '../../../hooks/Snackbar/SnackbarContext';
 
 /**
  * Page pour gérer un objectif en temps réel.
@@ -24,6 +25,7 @@ const Wrapper = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const { objectiveId } = useParams();
   const navigate = useNavigate();
+  const showSnackbar = useSnackbar(); // Utilisation du hook Snackbar
 
   const {
     objectiveData,
@@ -53,13 +55,20 @@ const Wrapper = () => {
   } = useStepsGenerator({ setSteps, title});
 
   const handleSaveGlobal = async () => {
-    const updatedData = {
-      ...objectiveData,
-      steps: steps // Mettez à jour steps dans objectiveData
-    };
-    const savedId = await saveObjective(updatedData);
-    if (savedId && !objectiveId) {
-      navigate(`/realTimeStepManager/${savedId}`);
+    try {
+      const updatedData = {
+        ...objectiveData,
+        steps: steps // Mettez à jour steps dans objectiveData
+      };
+      const savedId = await saveObjective(updatedData);
+    
+      if (savedId && !objectiveId) {
+        navigate(`/realTimeStepManager/${savedId}`);   
+      }
+      showSnackbar('Sauvegarde réussie !', 'success'); 
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde de l'objectif : ", error);
+      showSnackbar('Erreur lors de la sauvegarde', 'error'); 
     }
   };
 
@@ -69,9 +78,11 @@ const Wrapper = () => {
       if (!objectiveId && savedId) {
         navigate(`/realTimeStepManager/${savedId}`);
       }
+      showSnackbar('Sauvegarde réussie !', 'success'); 
       setIsPopupOpen(false);
     } catch (error) {
       console.error("Erreur lors de la sauvegarde de l'objectif : ", error);
+      showSnackbar('Erreur lors de la sauvegarde', 'error'); 
     }
   };
 

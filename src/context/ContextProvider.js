@@ -3,7 +3,7 @@
 
 import React from 'react';
 import  UserProvider  from './AuthProvider';  // Contexte pour gérer l'utilisateur
-import { SnackbarProvider } from '../components/ui/Snackbar/SnackbarContext';
+import { SnackbarProvider } from '../hooks/Snackbar/SnackbarContext'; // Contexte pour gérer le Snackbar
 
 
 const ContextProvider = ({ children }) => {
