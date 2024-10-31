@@ -1,10 +1,3 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { streamLLMResponse } from '../../../../services/llm';
-import { isSubStep, clearStepContent, clearSubStepContent } from '../../../../utils/clearData';
-
-
-const generateUniqueId = () => Math.random().toString(36).substr(2, 9);
-
 /**
  * C'est THE fichier qui traite les données d'une requête LLM.
  * 
@@ -20,54 +13,12 @@ const generateUniqueId = () => Math.random().toString(36).substr(2, 9);
  *   => streamLLMResponse (index.js)
  */
 
-const ERRORS = {
-  CONNECTION_FAILED: 'CONNECTION_FAILED',
-  STREAM_ERROR: 'STREAM_ERROR',
-  ABORT_ERROR: 'ABORT_ERROR'
-};
 
-const createNewStep = (content) => ({
-  id: generateUniqueId(),
-  content: clearStepContent(content),
-  isLocked: false,
-  subSteps: []
-});
-
-const createNewSubStep = (content) => ({
-  id: generateUniqueId(),
-  content: clearSubStepContent(content)
-});
-
-const addSubStepToLastStep = (steps, subStep) => {
-  const newSteps = [...steps];
-  const lastStep = newSteps[newSteps.length - 1];
-  lastStep.subSteps.push(subStep);
-  return newSteps;
-};
-
-const addNewStep = (steps, newStep) => [...steps, newStep];
-
-const processLine = (line, currentStepRef, setSteps) => {
-  const trimmedLine = line.trim();
-  if (!trimmedLine) return;
-
-  if (isSubStep(trimmedLine) && currentStepRef.current) {
-    const subStep = createNewSubStep(trimmedLine);
-    setSteps(prev => addSubStepToLastStep(prev, subStep));
-  } else {
-    const newStep = createNewStep(trimmedLine);
-    currentStepRef.current = newStep;
-    setSteps(prev => addNewStep(prev, newStep));
-  }
-};
-
-const processLines = (lines, bufferRef, updateSteps) => {
-  lines.forEach(line => {
-    if (line.trim()) {
-      updateSteps(line);
-    }
-  });
-};
+// useStepsGenerator.js
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { streamLLMResponse } from '../../../../services/llm';
+import { processLine, processLines } from './lineProcessing';
+import { ERRORS } from './errorConstants';
 
 export const useStepsGenerator = ({ setSteps, title, onError }) => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -77,8 +28,8 @@ export const useStepsGenerator = ({ setSteps, title, onError }) => {
   const handlerRef = useRef(null);
   const retryTimeoutRef = useRef(null);
   const retryCountRef = useRef(0);
-  const MAX_RETRIES = 1; // nb de tententatives de connection
-  const RETRY_DELAY = 2000; // 2 seconds
+  const MAX_RETRIES = 1; 
+  const RETRY_DELAY = 2000; 
 
   const handleError = useCallback((error, type = ERRORS.STREAM_ERROR) => {
     console.error('Error in steps generator:', error);
@@ -88,12 +39,8 @@ export const useStepsGenerator = ({ setSteps, title, onError }) => {
   }, [onError]);
 
   const cleanup = useCallback(() => {
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-    }
-    if (handlerRef.current) {
-      handlerRef.current.abort();
-    }
+    if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+    if (handlerRef.current) handlerRef.current.abort();
     handlerRef.current = null;
     retryCountRef.current = 0;
     bufferRef.current = '';
@@ -111,39 +58,23 @@ export const useStepsGenerator = ({ setSteps, title, onError }) => {
     processLine(line, currentStepRef, setSteps);
   }, [setSteps]);
 
-
   const handleChunk = useCallback((content) => {
-    console.log('Chunk received:', content);
     const fullContent = bufferRef.current + content;
     const lines = fullContent.split('\n');
-    console.log('Buffer:', lines);
     
-    //if (!content.endsWith('\n') && lines[lines.length - 1]) {
     if (!content.endsWith('\n')) {
-      bufferRef.current = lines.pop() || ''; // Stocker la dernière ligne incomplète
-      console.log('Buffering1:', lines);
+      bufferRef.current = lines.pop() || '';
     } else {
-      bufferRef.current = ''; // Réinitialiser le buffer
-      if (lines[lines.length - 1]?.trim()) {
-        // Assurez-vous de ne pas ajouter une ligne vide à la fin
-        lines.push(lines[lines.length - 1]);
-      }
+      bufferRef.current = '';
     }
   
-    console.log('end Buffer:', lines);
-    processLines(lines, bufferRef, updateSteps); // Appelez processLines avec le contenu restant
+    processLines(lines, updateSteps);
   }, [updateSteps]);
 
-  
-
-  
-
   const stopGeneration = useCallback(async () => {
-    console.log('Stopping generation...');
     try {
       await cleanup();
       processFinalBuffer();
-      console.log('Generation successfully stopped');
     } catch (error) {
       handleError(error, ERRORS.ABORT_ERROR);
     } finally {
@@ -168,10 +99,8 @@ export const useStepsGenerator = ({ setSteps, title, onError }) => {
           handleChunk,
           (error) => {
             if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-              // Connection failed - attempt retry if under max retries
               if (retryCountRef.current < MAX_RETRIES) {
                 retryCountRef.current++;
-                console.log(`Retrying connection (${retryCountRef.current}/${MAX_RETRIES})...`);
                 retryTimeoutRef.current = setTimeout(attemptConnection, RETRY_DELAY);
                 return;
               }
@@ -198,9 +127,7 @@ export const useStepsGenerator = ({ setSteps, title, onError }) => {
   }, [handleChunk, stopGeneration, processFinalBuffer, title, setSteps, cleanup, handleError]);
 
   useEffect(() => {
-    return () => {
-      cleanup();
-    };
+    return () => cleanup();
   }, [cleanup]);
 
   return {
