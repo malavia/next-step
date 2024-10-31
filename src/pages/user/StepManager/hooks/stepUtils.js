@@ -14,12 +14,23 @@ export const initialObjectiveData = (initialTitle = '', initialSteps = []) => ({
     createdAt: null,
     updatedAt: null,
   });
-  
-export const createNewStep = (content) => ({
+
+export const createNewStep = (content) => ({ //ancienne version utilisé pour le moment pour la génération
   id: generateUniqueId(),
   content: clearStepContent(content),
   isLocked: false,
   subSteps: []
+});
+
+export const initialStepData = () => ({ //new version
+    id: generateUniqueId(),
+    content: '',
+    priority: 'medium',
+    deadline: '',
+    duration: '',
+    dependencies: [],
+    type: 'sequential',
+    subSteps: []
 });
 
 export const createNewSubStep = (content) => ({

@@ -1,19 +1,11 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
-import { Save } from 'lucide-react';
-import { X } from 'lucide-react';
+import { Plus, Save, X } from 'lucide-react';
+import {  addNewStep, initialStepData } from '../../hooks/stepUtils';
+
 
 export const NewStepInput = ({ onAddStep }) => {
     const [isAdding, setIsAdding] = useState(false);
-    const [newStep, setNewStep] = useState({
-      content: '',
-      priority: 'medium',
-      deadline: '',
-      duration: '',
-      dependencies: [],
-      type: 'sequential',
-      subSteps: [] // Added this to match the expected structure
-    });
+    const [newStep, setNewStep] = useState(initialStepData());
   
     const handleSave = () => {
       console.log('NewStepInput - newStep:', newStep);
@@ -21,27 +13,20 @@ export const NewStepInput = ({ onAddStep }) => {
       
       // Ensure content is a string and not undefined/null before trimming
       const contentToSave = String(newStep.content || '');
-      console.log('NewStepInput - contentToSave:', contentToSave);
-      console.log('NewStepInput - contentToSave type:', typeof contentToSave);
       
-      if (contentToSave.trim()) {
+      if (contentToSave) {
+        
         const stepToAdd = {
           ...newStep,
-          content: contentToSave,
-          id: Date.now().toString()
+          content: contentToSave
         };
         console.log('NewStepInput - stepToAdd:', stepToAdd);
         
+        addNewStep([], stepToAdd);
         onAddStep(stepToAdd);
-        setNewStep({
-          content: '',
-          priority: 'medium',
-          deadline: '',
-          duration: '',
-          dependencies: [],
-          type: 'sequential',
-          subSteps: []
-        });
+
+        // Reset state
+        setNewStep(initialStepData()); 
         setIsAdding(false);
       }
     };
@@ -114,57 +99,3 @@ export const NewStepInput = ({ onAddStep }) => {
       </div>
     );
   };
-
-/* ancienne version
-const NewStepInput = ({ onAddStep }) => {
-  const [isAdding, setIsAdding] = useState(false);
-  const [newContent, setNewContent] = useState('');
-
-  const handleSave = () => {
-    if (newContent.trim()) {
-      onAddStep(newContent);
-      setNewContent('');
-      setIsAdding(false);
-    }
-  };
-
-  return (
-    <div className="mb-4">
-      {isAdding ? (
-        <div className="flex gap-2 items-center">
-          <input
-            type="text"
-            value={newContent}
-            onChange={(e) => setNewContent(e.target.value)}
-            placeholder="Nouvelle étape..."
-            className="flex-1 px-3 py-2 border rounded"
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSave();
-            }}
-          />
-          <button
-            onClick={handleSave}
-            className="p-2 text-green-600 hover:text-green-800"
-          >
-            <Save size={20} />
-          </button>
-          <button
-            onClick={() => setIsAdding(false)}
-            className="p-2 text-red-600 hover:text-red-800"
-          >
-            <X size={20} />
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
-        >
-          <Plus size={20} />
-          <span>Ajouter une étape</span>
-        </button>
-      )}
-    </div>
-  );
-};*/

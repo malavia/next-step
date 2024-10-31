@@ -95,10 +95,6 @@ const Wrapper = () => {
     );
   }
 
-
-  
-  console.log('steps ', steps);
-
   return (
     <div className="p-6 bg-gray-100 min-h-screen dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 

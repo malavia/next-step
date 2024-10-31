@@ -16,7 +16,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { useAuth } from '../../../../context/AuthProvider';
-import { initialObjectiveData, createNewStep, addNewStep } from './stepUtils';
+import { initialObjectiveData, addNewStep } from './stepUtils';
 
 export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTitle = '' }) => {
   const [steps, setSteps] = useState(initialSteps);
@@ -119,7 +119,7 @@ export const useStepsCRUD = ({ objectiveId = null, initialSteps = [], initialTit
     setTitle,
     setSteps,
     setObjectiveData,
-    addStep: (content) => setSteps(addNewStep(steps, createNewStep(content))),
+    addStep: (step) => setSteps(addNewStep(steps, step)),
     updateStep: (updatedStep) => setSteps(steps.map(step => step.id === updatedStep.id ? updatedStep : step)),
     deleteStep: (stepId) => setSteps(steps.filter(step => step.id !== stepId)),
     addSubStep: (stepId, newSubStep) => setSteps(steps.map(step => step.id === stepId ? { ...step, subSteps: [...step.subSteps, newSubStep] } : step)),
