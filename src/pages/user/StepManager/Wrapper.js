@@ -2,17 +2,18 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStepsGenerator } from './hooks/useStepsGenerator';
-import { StepDisplay } from './components/StepDisplay';
+import { StepDisplay } from './components/StepDisplay/StepDisplay';
 import { CircularProgress } from '@mui/material';
 import { Edit } from 'lucide-react';
 import { useStepsCRUD } from './hooks/useStepsCRUD';
-import ObjectivePopup from './components/ObjectivePopup';
+import ObjectivePopup from './components/popup/ObjectivePopup';
 
 import ObjectiveTitleInput from './components/ObjectiveTitleInput';
 import GenerationButtons from './components/GenerationsButtons';
 import SaveButton from './components/SaveButton';
 import { useSnackbar } from '../../../hooks/Snackbar/SnackbarContext';
 
+import TestGenerationPage from './TestGenerationPage';
 /**
  * Page pour gérer un objectif en temps réel.
  * Permet de saisir un titre, de générer des étapes et de les modifier.
@@ -53,7 +54,7 @@ const Wrapper = () => {
     startGeneration, 
     stopGeneration 
   } = useStepsGenerator({ setSteps, title});
-
+    
   const handleSaveGlobal = async () => {
     try {
       const updatedData = {
@@ -94,8 +95,14 @@ const Wrapper = () => {
     );
   }
 
+
+  
+  console.log('steps ', steps);
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+
+      <TestGenerationPage />
       <div className="max-w-3xl mx-auto">
         {/* Header avec titre et boutons */}
         <div className="flex gap-4 mb-6">
@@ -152,6 +159,12 @@ const Wrapper = () => {
           onDeleteSubStep={deleteSubStep}
           onReorderSteps={reorderSteps}
         />
+
+        
+        <div className="flex-grow  bg-green-50 p-4 rounded"> 
+          <pre>{JSON.stringify(objectiveData, null, 2)}</pre> {/* null et 2 permettent une indentation pour faciliter la lecture */}
+          <pre>{JSON.stringify(steps, null, 2)}</pre> {/* null et 2 permettent une indentation pour faciliter la lecture */}
+        </div>
       </div>
     </div>
   );

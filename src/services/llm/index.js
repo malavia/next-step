@@ -15,7 +15,9 @@ import { ParserLLMResponse } from './ParserLLMResponse';
  *
  * @returns {Promise<StreamHandler>} - Une promesse qui résout en un StreamHandler qui permet d'annuler la requête.
  */
-export const streamLLMResponse = async (title, onChunk, onError, onComplete) => {
+export const streamLLMResponse = async (objectiveData, onChunk, onError, onComplete) => {
+  console.log("Demande de streamLLMResponse", objectiveData);
+  console.log(objectiveData.deadline);
   const abortController = new AbortController();
   console.log("Début du streaming...");
 
@@ -25,7 +27,7 @@ export const streamLLMResponse = async (title, onChunk, onError, onComplete) => 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...LLM_CONFIG,
-        messages: buildMessages(title),
+        messages: buildMessages(objectiveData.title, objectiveData.description, objectiveData.terme),
         stream: true
       }),
       signal: abortController.signal

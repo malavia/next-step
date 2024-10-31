@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-
+import React, { useState } from 'react';
+import { getTermDate, formatDate } from '../../../../../utils/handleDate'; 
 /**
  * Component for the second step of the New Version form, which asks the user to
  * select a term and input metrics for their objective.
@@ -53,29 +53,6 @@ const Step2Metrics = ({ objectiveData, setObjectiveData  }) => {
   };
 
 
-  const getTermDate = (term) => {
-    const today = new Date();
-    switch (term) {
-      case 'court':
-        return new Date(today.setMonth(today.getMonth() + 1));
-      case 'moyen':
-        return new Date(today.setMonth(today.getMonth() + 6));
-      case 'long':
-        return new Date(today.setFullYear(today.getFullYear() + 1));
-      default:
-        return null;
-    }
-  };
-
-  const formatDate = (date) => {
-    if (!date) return '';
-    return new Date(date).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
   const validateStep = () => {
     const newErrors = {};
     const selectedDate = new Date(objectiveData.deadline);
@@ -108,6 +85,7 @@ const Step2Metrics = ({ objectiveData, setObjectiveData  }) => {
 
   return (
     <div className="space-y-6">
+        <span className=" font-bold text-red-500">Ces valeurs sont pour évaluer la progression, mais ne sont pas adaptable à tout les cas, il faut re réflechir le truc</span>
       {/* Champs pour les métriques */}
       <div className="grid grid-cols-3 gap-4">
         <div>
