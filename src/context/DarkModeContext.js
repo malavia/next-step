@@ -1,31 +1,53 @@
-// src/context/DarkModeContext.js
 import { createContext, useContext, useEffect, useState } from 'react';
 
 const DarkModeContext = createContext();
 
+// Fonction utilitaire pour détecter la préférence système
+function getSystemPreference() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+// Fonction utilitaire pour récupérer le thème depuis le localStorage
+function getStoredTheme() {
+  const storedTheme = localStorage.getItem('theme');
+  return storedTheme ? storedTheme === 'dark' : null;
+}
+
+// Fonction utilitaire pour sauvegarder le thème dans le localStorage
+function saveTheme(isDarkMode) {
+  localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+}
+
+// Fonction utilitaire pour appliquer le thème au document
+function applyTheme(isDarkMode) {
+  document.documentElement.classList.toggle('dark', isDarkMode);
+}
+
 export function DarkModeProvider({ children }) {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(getStoredTheme() ?? getSystemPreference());
 
-  // Charge le thème de l'utilisateur depuis le stockage local
   useEffect(() => {
-    const storedTheme = localStorage.getItem('theme');
-    if (storedTheme) {
-      setIsDarkMode(storedTheme === 'dark');
-    }
-  }, []);
-
-  // Met à jour le thème du document et le stockage local
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDarkMode);
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    applyTheme(isDarkMode);
+    saveTheme(isDarkMode);
   }, [isDarkMode]);
 
-  const toggleDarkMode = () => {
-    setIsDarkMode((prevMode) => !prevMode);
+  useEffect(() => {
+    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e) => setIsDarkMode(e.matches);
+    prefersDarkScheme.addEventListener('change', handleChange);
+    return () => prefersDarkScheme.removeEventListener('change', handleChange);
+  }, []);
+
+  const toggleDarkMode = () => setIsDarkMode((prevMode) => !prevMode);
+
+  // Fonction de réinitialisation du thème
+  const resetTheme = () => {
+    localStorage.removeItem('theme');
+    setIsDarkMode(getSystemPreference());
   };
 
   return (
-    <DarkModeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
+    <DarkModeContext.Provider value={{ isDarkMode, toggleDarkMode, resetTheme }}>
       {children}
     </DarkModeContext.Provider>
   );

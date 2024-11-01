@@ -34,7 +34,7 @@ const TestGenerationPage = () => {
   }
 
   return (
-    <div style={{ padding: '20px', backgroundColor: green[50] }}>
+    <div className='p-20 bg-green-50  dark:bg-gray-800'>
       <h2>Step Generation Test</h2>
 
       <button 

@@ -96,7 +96,7 @@ const Wrapper = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="p-6 bg-gray-100 min-h-3xl dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
       <TestGenerationPage />
       <div className="max-w-3xl mx-auto">
@@ -157,7 +157,7 @@ const Wrapper = () => {
         />
 
         
-        <div className="flex-grow  bg-green-50 p-4 rounded"> 
+        <div className="flex-grow bg-green-50 dark:bg-gray-800 p-4 rounded"> 
           <pre>{JSON.stringify(objectiveData, null, 2)}</pre> {/* null et 2 permettent une indentation pour faciliter la lecture */}
           <pre>{JSON.stringify(steps, null, 2)}</pre> {/* null et 2 permettent une indentation pour faciliter la lecture */}
         </div>
