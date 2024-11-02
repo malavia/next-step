@@ -40,7 +40,7 @@ export const NewStepInput = ({ onAddStep }) => {
               value={newStep.content}
               onChange={(e) => setNewStep({...newStep, content: e.target.value})}
               placeholder="Nouvelle étape..."
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-2 border rounded dark:bg-gray-800 dark:text-gray-100"
               autoFocus
             />
             
@@ -48,7 +48,7 @@ export const NewStepInput = ({ onAddStep }) => {
               <select 
                 value={newStep.priority}
                 onChange={(e) => setNewStep({...newStep, priority: e.target.value})}
-                className="px-3 py-2 border rounded"
+                className="px-3 py-2 border rounded dark:bg-gray-800 dark:text-gray-100"
               >
                 <option value="low">Priorité basse</option>
                 <option value="medium">Priorité moyenne</option>
@@ -58,7 +58,7 @@ export const NewStepInput = ({ onAddStep }) => {
               <select
                 value={newStep.type}
                 onChange={(e) => setNewStep({...newStep, type: e.target.value})}
-                className="px-3 py-2 border rounded"
+                className="px-3 py-2 border rounded dark:bg-gray-800 dark:text-gray-100"
               >
                 <option value="sequential">Séquentiel</option>
                 <option value="parallel">Parallèle</option>
@@ -68,7 +68,7 @@ export const NewStepInput = ({ onAddStep }) => {
                 type="date"
                 value={newStep.deadline}
                 onChange={(e) => setNewStep({...newStep, deadline: e.target.value})}
-                className="px-3 py-2 border rounded"
+                className="px-3 py-2 border rounded dark:bg-gray-800 dark:text-gray-100"
               />
             </div>
             

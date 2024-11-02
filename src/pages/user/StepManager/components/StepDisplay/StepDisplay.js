@@ -4,7 +4,7 @@ import { Plus, Trash2, Save, X, GripVertical } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { EditableContent } from '@/components/ui/EditableContent';
 import {NewStepInput} from './NewStepInput';
-
+import {StepCard} from './StepCard';
 import {SubStep} from './SubStep';
 
 
@@ -79,57 +79,17 @@ export const StepDisplay = ({
                   index={index}
                 >
                   {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className={`mb-4 border rounded-lg p-4 ${
-                        snapshot.isDragging ? 'bg-gray-50 shadow-lg' : ''
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div 
-                          {...provided.dragHandleProps}
-                          className="cursor-grab hover:text-gray-600"
-                        >
-                          <GripVertical size={20} />
-                        </div>
-                        <div className="flex-1 flex items-center font-bold">
-                          <span className="text-lg font-medium mr-2">{`${index + 1}.`}</span>
-                          <EditableContent
-                            content={step.content}
-                            onSave={(newContent) => onUpdateStep({ ...step, content: newContent })}
-                          />
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              const newSubStep = {
-                                id: Math.random().toString(36).substr(2, 9),
-                                content: 'Nouvelle sous-étape'
-                              };
-                              onAddSubStep(step.id, newSubStep);
-                            }}
-                            className="p-2 text-green-600 hover:text-green-800"
-                          >
-                            <Plus size={16} />
-                          </button>
-                          <button
-                            onClick={() => onDeleteStep(step.id)}
-                            className="p-2 text-red-600 hover:text-red-800"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                      
-                      
-                      {/* Sub-Step list */}
-                      <div className="ml-8 mt-2">
-                        {step.subSteps.map((subStep) => (
-                          <SubStep stepId={step.id} subStep={subStep} onUpdate={onUpdateSubStep} onDelete={onDeleteSubStep} />
-                        ))}
-                      </div>
-                    </div>
+                    <StepCard
+                      step={step}
+                      index={index}
+                      provided={provided}
+                      snapshot={snapshot}
+                      onUpdateStep={onUpdateStep}
+                      onDeleteStep={onDeleteStep}
+                      onAddSubStep={onAddSubStep}
+                      onUpdateSubStep={onUpdateSubStep}
+                      onDeleteSubStep={onDeleteSubStep}
+                    />
                   )}
                 </Draggable>
               ))}
