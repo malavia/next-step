@@ -11,32 +11,22 @@ export const buildSystemMessage = () => ({
         Terme : ${terme}
 
         Peux-tu me fournir des étapes et sous-étapes concrètes pour atteindre cet objectif dans le format suivant : 
-          Étape 1 : <Nom de l'étape>
+          Étape 1 :: <Nom de l'étape>
+          Priorité : <Priorité de l'étape entre Low, Medium et High>
+          Type : <Type de l'étape entre Sequential et Parallel>
+          Deadline : <Deadline de l'étape en fonction du terme si le terme est indiqué>
           Sous-étape 1 : <Description de la sous-étape>
           Sous-étape 2 : <Description de la sous-étape>
           Étape 2 : <Nom de l'étape>
+          Priorité : <Priorité de l'étape entre basse, moyenne et haute>
+          Type : <Type de l'étape entre sequenttial et parallel>
+          Deadline : <Deadline de l'étape en fonction du terme si le terme est indifié>
           Sous-étape 1 : <Description de la sous-étape>
           ...
       `
-  
   });
   
   export const buildMessages = (title, description = "", terme = "") => [
     buildSystemMessage(),
     buildUserMessage(title, description, terme)
   ];
-
-  
-
-      /* l'ancien prompt  - le nouveau semble plus efficace
-    `Génère une liste d'étapes pour atteindre l'objectif suivant : "${title}". 
-
-      Chaque étape doit avoir 2 à 3 sous-étapes. 
-      Assure-toi que les étapes et les sous-étapes sont rédigées de manière réutilisable pour d'autres objectifs. ne pas répeter l'objectif principal.
-      Chaque étape et sous-étape doit être séparée par un saut de ligne. 
-      Les sous étapes doivent commencer par le texte "Sous-étape 1 :"
-
-      
-      Valeurs métriques : 3 séances de 30 minutes par semaine
-
-*/

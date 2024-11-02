@@ -21,6 +21,7 @@ export const StepCard = ({
 
     
     const PriorityBadge = ({ priority }) => {
+        console.log('PriorityBadge - priority:', priority);
         const colors = {
         high: "bg-red-100 text-red-800",
         medium: "bg-yellow-100 text-yellow-800",
@@ -28,7 +29,7 @@ export const StepCard = ({
         };  
         return (
         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${colors[priority]}`}>
-            {priority.charAt(0).toUpperCase() + priority.slice(1)}
+            {priority?.charAt(0).toUpperCase() + priority?.slice(1)}
         </span>
         );
     };
@@ -60,10 +61,15 @@ export const StepCard = ({
                 content={step.content}
                 onSave={(newContent) => onUpdateStep({ ...step, content: newContent })}
               />
-              <PriorityBadge priority={step.priority} />
+              <PriorityBadge priority={step.priority}>{isNaN(step.priority) ? "Inconnue" : String(step.priority)}</PriorityBadge>
               {step.type === 'parallel' && (
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
                   Parallèle
+                </span>
+              )}
+              {step.type === 'sequential' && (
+                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                  Séquentiel
                 </span>
               )}
             </div>
@@ -104,7 +110,7 @@ export const StepCard = ({
 
         <div className="ml-8 mt-2">
         {step.subSteps.map((subStep) => (
-            <SubStep stepId={step.id} subStep={subStep} onUpdate={onUpdateSubStep} onDelete={onDeleteSubStep} />
+            <SubStep key={subStep.id || index} stepId={step.id} subStep={subStep} onUpdate={onUpdateSubStep} onDelete={onDeleteSubStep} />
         ))}
         </div>
 

@@ -13,7 +13,6 @@ import GenerationButtons from './components/GenerationsButtons';
 import SaveButton from './components/SaveButton';
 import { useSnackbar } from '../../../hooks/Snackbar/SnackbarContext';
 
-import TestGenerationPage from './TestGenerationPage';
 /**
  * Page pour gérer un objectif en temps réel.
  * Permet de saisir un titre, de générer des étapes et de les modifier.
@@ -53,7 +52,7 @@ const Wrapper = () => {
     isGenerating, 
     startGeneration, 
     stopGeneration 
-  } = useStepsGenerator({ setSteps, title});
+  } = useStepsGenerator({ setSteps, objectiveData});
     
   const handleSaveGlobal = async () => {
     try {
@@ -98,7 +97,6 @@ const Wrapper = () => {
   return (
     <div className="p-6 bg-gray-100 min-h-3xl dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
-      <TestGenerationPage />
       <div className="max-w-3xl mx-auto">
         {/* Header avec titre et boutons */}
         <div className="flex gap-4 mb-6">

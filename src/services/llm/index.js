@@ -17,9 +17,13 @@ import { ParserLLMResponse } from './ParserLLMResponse';
  */
 export const streamLLMResponse = async (objectiveData, onChunk, onError, onComplete) => {
   console.log("Demande de streamLLMResponse", objectiveData);
-  console.log(objectiveData.deadline);
   const abortController = new AbortController();
   console.log("Début du streaming...");
+  console.log("objectiveData avant envoi: " , objectiveData);
+
+
+  const leMesseageEnvoye = buildMessages(objectiveData.title, objectiveData.description, objectiveData.terme);
+  console.log('leMesseageEnvoye :' , leMesseageEnvoye[1].content);
 
   try {
     const response = await fetch(LLM_CONFIG.endpoint, {
@@ -27,12 +31,16 @@ export const streamLLMResponse = async (objectiveData, onChunk, onError, onCompl
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...LLM_CONFIG,
-        messages: buildMessages(objectiveData.title, objectiveData.description, objectiveData.terme),
+        messages: leMesseageEnvoye,
         stream: true
       }),
       signal: abortController.signal
     });
-    console.log("Réponse reçue du serveur");
+    //console.log("Réponse reçue du serveur", response);
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
     const handler = new ParserLLMResponse(onChunk, onError, onComplete);
     handler.abortController = abortController;

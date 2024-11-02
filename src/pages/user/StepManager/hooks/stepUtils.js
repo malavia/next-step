@@ -1,5 +1,4 @@
 // stepUtils.js
-import { clearStepContent, clearSubStepContent } from '../../../../utils/clearData';
 
 export const generateUniqueId = () => Math.random().toString(36).substr(2, 9);
 
@@ -17,7 +16,7 @@ export const initialObjectiveData = (initialTitle = '', initialSteps = []) => ({
 
 export const createNewStep = (content) => ({ //ancienne version utilisé pour le moment pour la génération
   id: generateUniqueId(),
-  content: clearStepContent(content),
+  content,
   isLocked: false,
   subSteps: []
 });
@@ -35,7 +34,7 @@ export const initialStepData = () => ({ //new version
 
 export const createNewSubStep = (content) => ({
   id: generateUniqueId(),
-  content: clearSubStepContent(content)
+  content
 });
 
 export const addSubStepToLastStep = (steps, subStep) => {

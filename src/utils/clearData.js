@@ -1,14 +1,3 @@
-export function nettoyerTexte(input) {
-    // Garde les sauts de ligne et ne supprime que "Étape X:", "X." et "Sous-étape :"
-    return input.replace(/Étape \d+:\s*|\d+\.\s*|Sous-étape :\s*/g, '').trimStart();
-}
-const theRegexForStep = /^[-*]? ?Étape \d+ ?:?\s*/;
-
-//const theRegexForSubStep = /^[-*] Sous-étape \d+ ?:?\s*/ ; //// Enlève le "- Sous-étape X :" ou "* Sous-étape X :" au début
-//const theRegexForSubStep = /^[-*] Sous-étape \d* ?:?\s*|^[-*] ?/;
-//const theRegexForSubStep = /^[-*]?\s*(?:Sous-étape \d+ :|[-*]\s*.*?):?\s*/;
-
-const theRegexForSubStep = /^[-*]?\s*(Sous-étape \d+(\.\d+)?(?:\s*:)?)/;
 /*
 [-*] : Cela correspond à un tiret (-) ou à un astérisque (*) au début de la chaîne.
 Sous-étape : Correspond exactement au mot "Sous-étape".
@@ -17,9 +6,20 @@ Sous-étape : Correspond exactement au mot "Sous-étape".
 :\s* : Correspond à un deux-points suivi de zéro ou plusieurs espaces.
 */
 
+// Regex pour identifier les étapes et les sous-étapes
+const theRegexForStep = /^[-*]? ?Étape \d+ ?:?\s*/;
+const theRegexForSubStep = /^[-*]?\s*(Sous-étape \d+(\.\d+)?(?:\s*:)?)/;
+
+// Regex pour extraire les attributs d'une étape
+const priorityRegex = /^Priorité\s*:\s*(Low|Medium|High)/i;
+const typeRegex = /^Type\s*:\s*(Sequential|Parallel)/i;
+const deadlineRegex = /^Deadline\s*:\s*(.*)/i;
+
+
 // Fonction pour vérifier si une étape est une sous-étape
 export const isSubStep = (step) => {
-  return step.startsWith('-') || step.startsWith('*') || step.match(theRegexForSubStep);
+  return step.match(theRegexForSubStep);
+  //return step.startsWith('-') || step.startsWith('*') || step.match(theRegexForSubStep);
 };
 
 // Fonction pour nettoyer le contenu d'une étape 
@@ -30,6 +30,17 @@ export const clearStepContent = (step) => {
 // Fonction pour nettoyer le contenu d'une sous-étape 
 export const clearSubStepContent = (step) => {
   return step.replace(theRegexForSubStep, '').trim();
+};
+
+// Fonction pour extraire les attributs d'une étape
+export const extractStepAttributes = (line, currentStep) => {
+  const priorityMatch = line.match(priorityRegex);
+  const typeMatch = line.match(typeRegex);
+  const deadlineMatch = line.match(deadlineRegex);
+
+  if (priorityMatch) currentStep.priority = priorityMatch[1].toLowerCase();
+  if (typeMatch) currentStep.type = typeMatch[1].toLowerCase();
+  if (deadlineMatch) currentStep.deadline = deadlineMatch[1];
 };
 
 /*

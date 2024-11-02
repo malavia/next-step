@@ -20,7 +20,8 @@ import { streamLLMResponse } from '../../../../services/llm';
 import { processLine, processLines } from './lineProcessing';
 import { ERRORS } from './errorConstants';
 
-export const useStepsGenerator = ({ setSteps, title, onError }) => {
+export const useStepsGenerator = ({ setSteps, objectiveData, onError }) => {
+  
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
   const currentStepRef = useRef(null);
@@ -61,7 +62,7 @@ export const useStepsGenerator = ({ setSteps, title, onError }) => {
   const handleChunk = useCallback((content) => {
     const fullContent = bufferRef.current + content;
     const lines = fullContent.split('\n');
-    
+    //console.log('handleChunk - lines:', lines);
     if (!content.endsWith('\n')) {
       bufferRef.current = lines.pop() || '';
     } else {
@@ -95,7 +96,7 @@ export const useStepsGenerator = ({ setSteps, title, onError }) => {
     const attemptConnection = async () => {
       try {
         handlerRef.current = await streamLLMResponse(
-          title,
+          objectiveData,
           handleChunk,
           (error) => {
             if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
@@ -124,7 +125,7 @@ export const useStepsGenerator = ({ setSteps, title, onError }) => {
 
     initializeGeneration();
     await attemptConnection();
-  }, [handleChunk, stopGeneration, processFinalBuffer, title, setSteps, cleanup, handleError]);
+  }, [handleChunk, stopGeneration, processFinalBuffer, objectiveData, setSteps, cleanup, handleError]);
 
   useEffect(() => {
     return () => cleanup();
